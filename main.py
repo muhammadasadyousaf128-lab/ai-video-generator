@@ -373,9 +373,11 @@ def build_poetry_drawtext(poetry_text: str, folder: str, video_duration: float) 
         return ""
 
     num_lines = len(lines)
-    line_duration = video_duration / num_lines
+line_duration = video_duration / num_lines
+if os.name == 'nt':
     font_file = "C\\:/Windows/Fonts/arialbd.ttf"
-
+else:
+    font_file = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
     filters = []
     for i, line in enumerate(lines):
         line_file = os.path.join(folder, f"line_{i}.txt")
