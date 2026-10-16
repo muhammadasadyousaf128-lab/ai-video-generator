@@ -54,7 +54,6 @@ async def serve_index():
 
 # ---------- Emotional Poetry Pool (100+ lines) ----------
 POETRY_LINES_POOL = [
-    # Sad / Emotional
     "Aansu chhupa ke hanste hain hum",
     "Dil toota hai phir bhi jee rahe hain",
     "Tanha raaton mein yaad aati hai",
@@ -75,8 +74,6 @@ POETRY_LINES_POOL = [
     "Rula ke muskurana seekha hai",
     "Dil ki baat dil mein hi reh gayi",
     "Waqt ne sab kuch badal diya",
-
-    # Deep / Philosophical
     "Zindagi ek sawaal hai",
     "Har jawab khud dhoondhna padta hai",
     "Jo mila usi mein khush raho",
@@ -87,8 +84,6 @@ POETRY_LINES_POOL = [
     "Khushiyan pal bhar ki hoti hain",
     "Yaadein umar bhar saath rehti hain",
     "Har kisi ka apna safar hai",
-
-    # Motivational
     "Utho chalo sapne dekho",
     "Har mushkil se aage niklo",
     "Manzil tumhara intezaar kar rahi",
@@ -129,8 +124,6 @@ POETRY_LINES_POOL = [
     "Umeed kabhi na chhodo",
     "Apna waqt aayega zaroor",
     "Har subah ek tohfa hai",
-
-    # Love / Heartbreak
     "Tumhari yaad mein jee rahe hain",
     "Dil ne tumhe hi chaha tha",
     "Tum door hue toh kya hua",
@@ -145,8 +138,6 @@ POETRY_LINES_POOL = [
     "Tumhari khushiyan hi meri hain",
     "Chahe tum kisi ke ho jao",
     "Mera pyaar wahi rahega",
-
-    # Hope / Uplifting
     "Nayi subah nayi umeed laati hai",
     "Kal behtar hoga zaroor",
     "Zindagi phir muskura degi",
@@ -366,18 +357,21 @@ def fetch_pollinations_images(prompt: str, count: int, folder: str) -> list:
     return paths
 
 
-# ---------- Poetry drawtext ----------
+# ---------- Poetry drawtext (FIXED for Windows + Linux) ----------
 def build_poetry_drawtext(poetry_text: str, folder: str, video_duration: float) -> str:
     lines = [l.strip() for l in poetry_text.split("\n") if l.strip()]
     if not lines:
         return ""
 
     num_lines = len(lines)
-line_duration = video_duration / num_lines
-if os.name == 'nt':
-    font_file = "C\\:/Windows/Fonts/arialbd.ttf"
-else:
-    font_file = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+    line_duration = video_duration / num_lines
+
+    # Cross-platform font detection
+    if os.name == 'nt':
+        font_file = "C\\:/Windows/Fonts/arialbd.ttf"
+    else:
+        font_file = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+
     filters = []
     for i, line in enumerate(lines):
         line_file = os.path.join(folder, f"line_{i}.txt")
