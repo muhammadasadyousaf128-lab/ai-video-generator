@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.mp4
+*.png
+*.jpg
+.env
+.git
+.gitignore
+README.md
+*.log
+temp_*
+output_*
