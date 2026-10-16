@@ -357,7 +357,7 @@ def fetch_pollinations_images(prompt: str, count: int, folder: str) -> list:
     return paths
 
 
-# ---------- Poetry drawtext (FIXED for Windows + Linux) ----------
+# ---------- Poetry drawtext (Windows + Linux) ----------
 def build_poetry_drawtext(poetry_text: str, folder: str, video_duration: float) -> str:
     lines = [l.strip() for l in poetry_text.split("\n") if l.strip()]
     if not lines:
@@ -366,7 +366,6 @@ def build_poetry_drawtext(poetry_text: str, folder: str, video_duration: float) 
     num_lines = len(lines)
     line_duration = video_duration / num_lines
 
-    # Cross-platform font detection
     if os.name == 'nt':
         font_file = "C\\:/Windows/Fonts/arialbd.ttf"
     else:
@@ -395,7 +394,7 @@ def build_poetry_drawtext(poetry_text: str, folder: str, video_duration: float) 
     return ",".join(filters)
 
 
-# ---------- Video with crossfade ----------
+# ---------- Video (memory-friendly: per-clip fade) ----------
 def create_video(image_paths, output_path, poetry_text, voice_file):
     try:
         folder = os.path.dirname(image_paths[0])
@@ -411,72 +410,96 @@ def create_video(image_paths, output_path, poetry_text, voice_file):
         video_duration = max(video_duration, 15.0)
 
         num_images = len(image_paths)
-        CROSSFADE = 0.6
-        per_image_duration = (video_duration + (num_images - 1) * CROSSFADE) / num_images
+        per_image_duration = video_duration / num_images
+        FADE = 0.4
 
         print(f"🎙️ Voice: {voice_duration:.2f}s, Video: {video_duration:.2f}s")
-        print(f"🖼️ {num_images} images, har ek: {per_image_duration:.2f}s, crossfade: {CROSSFADE}s")
+        print(f"🖼️ {num_images} images, har ek: {per_image_duration:.2f}s")
 
-        cmd = ["ffmpeg", "-y"]
-        for img in image_paths:
-            cmd.extend(["-loop", "1", "-t", f"{per_image_duration:.3f}", "-i", img])
-
-        filter_parts = []
-        for i in range(num_images):
-            filter_parts.append(
-                f"[{i}:v]scale=1280:720:force_original_aspect_ratio=decrease,"
-                f"pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=30,format=yuv420p,"
-                f"setsar=1,setpts=PTS-STARTPTS[v{i}]"
+        # Step 1: Har image ka alag clip (fade in/out)
+        clip_files = []
+        for i, img in enumerate(image_paths):
+            clip_path = os.path.join(folder, f"clip_{i}.mp4")
+            vf = (
+                f"scale=1280:720:force_original_aspect_ratio=decrease,"
+                f"pad=1280:720:(ow-iw)/2:(oh-ih)/2,"
+                f"fps=30,format=yuv420p,"
+                f"fade=t=in:st=0:d={FADE},"
+                f"fade=t=out:st={per_image_duration - FADE:.3f}:d={FADE}"
             )
+            cmd_clip = [
+                "ffmpeg", "-y",
+                "-loop", "1",
+                "-i", img,
+                "-t", f"{per_image_duration:.3f}",
+                "-vf", vf,
+                "-c:v", "libx264",
+                "-pix_fmt", "yuv420p",
+                "-r", "30",
+                clip_path
+            ]
+            r = subprocess.run(cmd_clip, capture_output=True, text=True, timeout=90)
+            if r.returncode == 0:
+                clip_files.append(clip_path)
+                print(f"   ✅ Clip {i+1}/{num_images}")
 
-        current = "[v0]"
-        for i in range(1, num_images):
-            offset = i * (per_image_duration - CROSSFADE)
-            next_label = f"[vx{i}]"
-            filter_parts.append(
-                f"{current}[v{i}]xfade=transition=fade:"
-                f"duration={CROSSFADE}:offset={offset:.3f}{next_label}"
-            )
-            current = next_label
+        if len(clip_files) < 2:
+            print(f"❌ Clips nahi bane")
+            return False
 
+        # Step 2: Clips concat
+        concat_list = os.path.join(folder, "concat.txt")
+        with open(concat_list, "w") as f:
+            for clip in clip_files:
+                f.write(f"file '{os.path.abspath(clip)}'\n")
+
+        temp_video1 = os.path.join(folder, "temp1.mp4")
+        cmd_concat = [
+            "ffmpeg", "-y",
+            "-f", "concat", "-safe", "0",
+            "-i", concat_list,
+            "-c", "copy",
+            temp_video1
+        ]
+        r = subprocess.run(cmd_concat, capture_output=True, text=True, timeout=120)
+        if r.returncode != 0:
+            print(f"❌ Concat fail: {r.stderr[-200:]}")
+            return False
+
+        # Step 3: Poetry overlay
+        base_filter = "scale=1280:720,format=yuv420p"
+        vf = base_filter
         if poetry_text:
             poetry_filters = build_poetry_drawtext(poetry_text, folder, video_duration)
             if poetry_filters:
-                filter_parts.append(f"{current}{poetry_filters}[vout]")
-            else:
-                filter_parts.append(f"{current}null[vout]")
-        else:
-            filter_parts.append(f"{current}null[vout]")
+                vf = f"{base_filter},{poetry_filters}"
 
-        filter_complex = ";".join(filter_parts)
-        temp_video = os.path.join(folder, "final_silent.mp4")
-
-        cmd.extend([
-            "-filter_complex", filter_complex,
-            "-map", "[vout]",
+        temp_video2 = os.path.join(folder, "temp2.mp4")
+        cmd_overlay = [
+            "ffmpeg", "-y",
+            "-i", temp_video1,
+            "-vf", vf,
             "-c:v", "libx264",
             "-pix_fmt", "yuv420p",
             "-r", "30",
-            "-t", f"{video_duration:.3f}",
             "-movflags", "+faststart",
-            temp_video
-        ])
-
-        print(f"🎬 FFmpeg xfade + poetry overlay...")
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            temp_video2
+        ]
+        r = subprocess.run(cmd_overlay, capture_output=True, text=True, timeout=240)
         if r.returncode != 0:
-            print(f"❌ xfade fail: {r.stderr[-500:]}")
-            return False
+            print(f"⚠️ Overlay fail: {r.stderr[-200:]}")
+            shutil.move(temp_video1, temp_video2)
+        else:
+            print(f"✅ Poetry overlay ready")
 
-        print(f"✅ Video + transitions + poetry ready")
-
+        # Step 4: Voice + Music
         music_file = get_random_music()
         has_voice = voice_file and os.path.exists(voice_file)
 
         if has_voice and music_file:
             cmd_final = [
                 "ffmpeg", "-y",
-                "-i", temp_video,
+                "-i", temp_video2,
                 "-i", voice_file,
                 "-i", music_file,
                 "-filter_complex",
@@ -497,12 +520,12 @@ def create_video(image_paths, output_path, poetry_text, voice_file):
                 return True
             else:
                 print(f"⚠️ Voice+Music fail: {r.stderr[-200:]}")
-                shutil.move(temp_video, output_path)
+                shutil.move(temp_video2, output_path)
                 return True
         elif has_voice:
             cmd_final = [
                 "ffmpeg", "-y",
-                "-i", temp_video,
+                "-i", temp_video2,
                 "-i", voice_file,
                 "-c:v", "copy",
                 "-c:a", "aac",
@@ -516,12 +539,12 @@ def create_video(image_paths, output_path, poetry_text, voice_file):
                 print(f"✅ Voice synced")
                 return True
             else:
-                shutil.move(temp_video, output_path)
+                shutil.move(temp_video2, output_path)
                 return True
         elif music_file:
             cmd_final = [
                 "ffmpeg", "-y",
-                "-i", temp_video,
+                "-i", temp_video2,
                 "-i", music_file,
                 "-c:v", "copy",
                 "-c:a", "aac",
@@ -535,10 +558,10 @@ def create_video(image_paths, output_path, poetry_text, voice_file):
                 print(f"✅ Music added")
                 return True
             else:
-                shutil.move(temp_video, output_path)
+                shutil.move(temp_video2, output_path)
                 return True
         else:
-            shutil.move(temp_video, output_path)
+            shutil.move(temp_video2, output_path)
             return True
 
     except Exception as e:
@@ -604,7 +627,7 @@ async def generate_video(request: PromptRequest):
         return {
             "status": "success",
             "video_url": f"/static/{final_filename}",
-            "method": "10 Images + Crossfade + Poetry + Voice + Music",
+            "method": "10 Images + Fade + Poetry + Voice + Music",
             "images_used": len(images),
             "poetry": poetry or "",
             "voice": voice_success
