@@ -4,7 +4,6 @@ from fastapi.responses import FileResponse
 from starlette.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from elevenlabs.client import ElevenLabs
 import os
 import time
 import random
@@ -12,6 +11,8 @@ import urllib.parse
 import shutil
 import subprocess
 import requests
+import asyncio
+import edge_tts
 
 load_dotenv()
 
@@ -58,23 +59,7 @@ POETRY_DATABASE = {
         "Aankhon mein nami liye baithe hain,\nTeri yaadon ka dard piye baithe hain,\nZamana kehta hai bhool jaao use,\nHum usi ke khyal mein jiye baithe hain.",
         "Jo chala gaya woh laut kar nahi aata,\nPar uski yaad dil se mitati nahi,\nHar mod par bas usi ka intezaar hai,\nZindagi ab aur aage badhti nahi.",
         "Rone ki ijazat nahi, muskurana padta hai,\nDard ko seene mein chhupana padta hai,\nLog poochte hain kya hua hai tumhe,\nBas keh dete hain waqt kharab chal raha hai.",
-        "Kisi ki yaad mein raat bhar jagna acha lagta hai,\nUnke khyalon mein khud ko khona acha lagta hai,\nChahe woh humare na ho kabhi,\nPhir bhi unka hi hone ka dawa karna acha lagta hai.",
-        "Toota hua dil kisi ko dikhaya nahi jata,\nDard ko lafzon mein samjhaya nahi jata,\nAansu bhi ab sookhne lagte hain,\nJab koi apna hi sath nibhata nahi.",
-        "Hum zinda hain magar zindagi nahi hai,\nYeh dil khush hai magar khushi nahi hai,\nTum door ho toh sab kuch adhura hai,\nTumhare bina yeh jahan bhi poora nahi hai.",
-        "Dil ke zakham kabhi bharte nahi,\nKuch dard kabhi marte nahi,\nJo log chhod kar jaate hain,\nUnke nishaan kabhi mitate nahi.",
-        "Aansu chhupane ki aadat ho gayi hai,\nHar dukh ko seene mein dafan karne ki aadat ho gayi hai,\nLog kehte hain hum bohot khushnaseeb hain,\nNahi pata unhe humein gham sehne ki aadat ho gayi hai.",
-        "Teri yaad mein har shaam dhalti hai,\nTere bina zindagi bikhri hui chalti hai,\nKaash tu laut aata is adhure dil mein,\nMagar teri raah toh ab kisi aur ko milti hai.",
-        "Humne chaha tha use jaan se zyada,\nMagar usne hi humein chhoda tanha,\nAb kisse batayein is dil ka haal,\nJo ek hi tha, wohi na raha.",
-        "Raat bhar jaag kar use dhoondte rahe,\nKhud ko hi apne andar dhoondte rahe,\nWoh toh shayad kisi aur ke ho gaye,\nHum abhi bhi purani yaadon mein kho gaye.",
-        "Zindagi ne dhoka diya, toh kya hua,\nDil toota, toh kya hua,\nJo chala gaya woh laut kar nahi aata,\nYeh samajhna hi ek bada sabak hai.",
-        "Meri kahani koi nahi padhta,\nMera dard koi nahi samajhta,\nMain hi apne zakhmon ko sehta hoon,\nAur khud hi inhein chhupata hoon.",
-        "Khamoshi meri zubaan ban gayi hai,\nTanhai meri pehchaan ban gayi hai,\nJo dard kabhi bayan nahi hua,\nWoh mere chehre ka nishaan ban gaya hai.",
-        "Tumse door hokar bhi tumhari yaad hai,\nDil toh abhi bhi tere hi haath mein hai,\nLog kehte hain bhool jao use,\nKaise bhoolun jab woh meri hi zaat mein hai.",
-        "Har muskurahat ke peeche ek dard chhupa hai,\nHar khushi ke peeche ek aansu ruka hai,\nLog samajhte hain humein koi gham nahi,\nShayad unhe khabar nahi ke humein jeena kya hai.",
-        "Waqt ne sab kuch badal diya,\nRishton ko ek nayi udaan de di,\nMagar hum toh wahi khade hain,\nJaise kisi ne humein bhula diya.",
-        "Unki galiyon se guzarna aadat ho gayi hai,\nUnka chehra yaad karna ibadat ho gayi hai,\nWoh toh humein bhool kar aage badh gaye,\nHumari toh unki yaad mein qayamat ho gayi hai.",
-        "Aankhon mein sirf nami reh gayi,\nMeri khamoshi hi meri zubani reh gayi,\nJo chala gaya woh wapas na aaya,\nUski yaad hi meri kahani reh gayi.",
-        "Tere bina jeena seekh liya humne,\nHar dard ko sehna seekh liya humne,\nTere jaane ke baad yeh pata chala,\nKhud ko sambhalna seekh liya humne."
+        "Kisi ki yaad mein raat bhar jagna acha lagta hai,\nUnke khyalon mein khud ko khona acha lagta hai,\nChahe woh humare na ho kabhi,\nPhir bhi unka hi hone ka dawa karna acha lagta hai."
     ],
     "love": [
         "Tere ishq mein humne sab kuch kho diya,\nTujhe chaha toh apne aap ko hi bhula diya,\nTere muskurane par meri duniya basar hoti hai,\nTere ek lafz par meri saari khushi thehar jati hai.",
@@ -86,23 +71,7 @@ POETRY_DATABASE = {
         "Tumhari yaad mein khoya rehta hoon,\nHar lamha bas tumhe sochta hoon,\nTum door ho magar paas lagte ho,\nDil mein basi ek khoobsurat dard ho.",
         "Tere naam ki khushbu se mehekta hai dil,\nTere ek deedar ko tarasta hai dil,\nKaise batayein tumhe ke kitna pyar hai,\nTere bina jaise bekaar hai dil.",
         "Meri nazar mein tera chehra basa hai,\nMeri saans mein teri khushbu rchi hai,\nMain tera hoon aur rahunga hamesha,\nYeh mohabbat meri tumse sachi hai.",
-        "Tere honthon ki muskaan meri duniya hai,\nTeri aankhon ka jadoo meri khushiyan hai,\nTujhe chhune ka khayal aata hai,\nToh jaise khil uthta hai mera aangan.",
-        "Dua mein tera naam maanga tha,\nKhuda se sirf tujhe hi paaya tha,\nTune hi chhod diya raah mein,\nPhir bhi tujhe hi apna banaya tha.",
-        "Tere bina yeh dil kehta hai,\nKoi kami si hai har jagah,\nTu saath ho toh manzil aasan lage,\nTere bina safar bada mushkil lage.",
-        "Ishq ek aisa samundar hai jismein hum doob gaye,\nTumse mil ke apne gham sab bhool gaye,\nTumhari zulfon ki chhaon mein kho gaye,\nTumhare bin jee nahi sakte yeh keh gaye.",
-        "Tumhari baaton ka nasha sa hai,\nTere saath ka har lamha naya sa hai,\nTum paas ho toh zindagi complete hai,\nTere bina sab kuch adhura sa hai.",
-        "Maine tujhe chaha bhi, tujhe puja bhi,\nTere ishq mein apne aap ko bhula bhi,\nTune mujhe badle mein dard diya,\nPhir bhi maine tujhe duaon mein rakh diya.",
-        "Teri aankhon mein kuch aisa jadoo hai,\nKe dekhne wala bas kho jata hai,\nTere ishq mein hum toh woh hain,\nJo bin piye hi matwala ho jata hai.",
-        "Tum se milne ki khushi alag hai,\nTum se bichadne ka gham alag hai,\nTum kya jaano is dil ki halat,\nDhadkan pe tere naam ki nishani alag hai.",
-        "Tumhari raah mein palkein bichhayi hain,\nTere aane ki umeed par jee rahe hain,\nTum kabhi aa jao palat kar,\nYeh dil bas teri hi yaad mein khoya hai.",
-        "Tujhe dhoondta hoon har mehfil mein,\nTujhe chahta hoon har dhadkan mein,\nTeri kami khatam nahi hoti,\nChahe duniya ho meri aankhon mein.",
-        "Tumse shuru, tum par khatam,\nMeri har kahani tumhari hi hai,\nChahu tujhe is qadar,\nJaise koi deewana apni jaan se pyar kare.",
-        "Dil mein armaan hai, aankhon mein khwab hain,\nTumse milne ka hi ek khayal hai,\nTum aa jao toh poori ho zindagi,\nTere bina bas yahi mera sawaal hai.",
-        "Tere pyar mein humne din raat kho diye,\nApne saare armaan tere naam kar diye,\nTu hi meri subah, tu hi meri shaam,\nTere naam se hi hain mere saare kaam.",
-        "Kabhi sochta hoon tujhe bhool jaun,\nKabhi sochta hoon tujhe kho jaun,\nMagar dil kehta hai tu toh meri jaan hai,\nTujhe bhool kar main kahan jaun.",
-        "Teri baaton mein ek sukoon hai,\nTera deedar ek khushi ka moosum hai,\nTujhse milne ke baad pata chala,\nIshq kya hota hai aur khushi kya hai.",
-        "Tumse milna ek khawab sa lagta hai,\nTumhara hona ek ajeeb sa nasha hai,\nTum ho toh sab kuch acha hai,\nTum na ho toh sab soona sa lagta hai.",
-        "Mere dil ki har dhadkan mein tera naam hai,\nMeri har khushi mein tera hi kaam hai,\nTujhe bhulana namumkin hai,\nKyunki tu hi meri subah aur shaam hai."
+        "Tere honthon ki muskaan meri duniya hai,\nTeri aankhon ka jadoo meri khushiyan hai,\nTujhe chhune ka khayal aata hai,\nToh jaise khil uthta hai mera aangan."
     ],
     "motivational": [
         "Jab log tumhein thukrayein toh himmat na haarna,\nKhud par bharosa rakhna aur duniya se na darna,\nGirna toh seekhne ka ek hissa hai,\nHar patthar par thes lagne se insaan nahi banta.",
@@ -114,23 +83,7 @@ POETRY_DATABASE = {
         "Khud par bharosa rakhna seekho,\nApne sapno par aitmaad rakho,\nLog toh aayenge aur jayenge,\nTum apne irado par qaayam raho.",
         "Mehnat itni karo ke naseeb bhi jhuk jaye,\nKismat tumhare kadmon mein chhalak jaye,\nJab tak sans hai, koshish jaari rakho,\nKabhi toh waqt tumhara bhi badal jaye.",
         "Zindagi ek imtihan hai, pass hona hai,\nHar mushkil ka hal nikalo, yeh karna hai,\nHaar ke aansu ponchh ke phir uthna,\nYehi toh jeena hai, yehi seekhna hai.",
-        "Waqt badalta hai, haal badalte hain,\nDin raat ke pahlu badalte hain,\nBas tum apne hausle ko na badalna,\nSabar aur mehnat se manzil milti hai.",
-        "Kamyabi ka raasta aasan nahi hota,\nHar kadam par imtihan hota hai,\nJo log haar nahi maante,\nUnka hi har khawab haqeeqat hota hai.",
-        "Apne aap ko itna strong banao,\nKe koi bhi tumhe tod na sake,\nTumhare sapno ko koi chura na sake,\nAur tumhe koi rasta mod na sake.",
-        "Aag lagao apne andar ki, roshni bano,\nAndhere mein bhi tum apni manzil ko pehchano,\nJo khud par yakeen rakhte hain,\nWoh duniya ki sabse badi taqat hote hain.",
-        "Kal ki fikar chhod, aaj par dhyaan de,\nApni kismat ko khud apne haath mein le,\nMehnat karo aisi ke duniya dekhe,\nApne sapno ki tasveer khud apne haath se banaye.",
-        "Hausla buland rakho, himmat ko na chhodo,\nMushkil waqt mein bhi apna raasta mat moddo,\nManzil tumhara intezaar kar rahi hai,\nBas thoda aur chalо, phir hasil tumhe hoga.",
-        "Tum mein hai woh taqat jo pahaad tod de,\nTum mein hai woh jasba jo duniya ko badal de,\nBas khud par yakeen rakhna seekho,\nKyunki tumse hi toh sab kuch hoga.",
-        "Jo log kehte hain tumse nahi hoga,\nUnhe apne kaam se jawab do,\nMehnat se apna muqaddar badlo,\nAur duniya ko tum apna naam dikha do.",
-        "Sapne bade dekho, unhe poora karne ki himmat rakho,\nRaaste mushkil hain, magar unse ladhne ki himmat rakho,\nZindagi ek baar milti hai, ise bekaar mat jane do,\nApni mehnat se duniya ko apna diwana banao.",
-        "Andhere se mat daro, sitare wahi chamakte hain,\nJo raat ke sabse gehre hisse mein bhi jagmagate hain,\nTum bhi apne waqt ka intezaar karo,\nEk din tumhara bhi suraj nikal kar aayega.",
-        "Haar kar bhi haar na maan lena,\nApne irado se kabhi ghabrana nahi,\nJo zakhm milte hain raaste mein,\nWoh tumhari manzil ki nishani hain.",
-        "Koshish karne walon ki kabhi haar nahi hoti,\nGirne walon ki kabhi zaat nahi hoti,\nJo lagatar chalte rehte hain,\nUnki manzil kabhi door nahi hoti.",
-        "Tumhe koi rasta rok sakta hai, hausla nahi,\nTumhe koi tod sakta hai, irada nahi,\nTumhari manzil tumhara intezaar kar rahi hai,\nBas thoda sa aur chalna hai, intezar nahi.",
-        "Apni mehnat par itna yakeen rakho,\nKe naseeb ko majboor karke rakh do,\nDuniya ki koi taqat tumhe rok nahi sakti,\nAgar tum khud par vishwas rakho.",
-        "Zindagi mein utaar chadhao aate hain,\nKabhi khushi toh kabhi gham satate hain,\nPar jo log apne hausle se nahi girte,\nWahi zindagi mein sabse aage jaate hain.",
-        "Suraj bhi roz ast hota hai,\nPhir naye ujaale ke saath wapas aata hai,\nTum bhi apni haar se seekho,\nAur nayi himmat ke saath aage badho.",
-        "Choti choti baaton se himmat na haaro,\nBade sapne dekhne ki aadat ko na badlo,\nDuniya mein sab kuch mumkin hai,\nBas tum apna kirdaar na badlo."
+        "Waqt badalta hai, haal badalte hain,\nDin raat ke pahlu badalte hain,\nBas tum apne hausle ko na badalna,\nSabar aur mehnat se manzil milti hai."
     ],
     "deep": [
         "Zindagi ek sawaal hai, har jawab khud dhoondhna padta hai,\nJo mila usi mein khush raho, kal ka kisne dekha hai,\nWaqt sabse bara ustaad hai, dard hi asli sabak deta hai,\nKhushiyan pal bhar ki hoti hain, yaadein umar bhar saath rehti hain.",
@@ -142,23 +95,7 @@ POETRY_DATABASE = {
         "Rishte aate hain aur chale jate hain,\nKuch yaadein chhod jate hain, kuch zakhm de jate hain,\nMagar jo rishta sachcha ho,\nWoh kabhi dil se nahi jata.",
         "Sach bolna aasan nahi hota,\nSach sunna aur bhi mushkil hota hai,\nMagar jo jhoot ki duniya mein jee raha ho,\nUska sukoon hamesha chin jata hai.",
         "Zindagi mein sab kuch hasil nahi hota,\nKuch cheezein kho kar hi milti hain,\nJo samajh gaya is baat ko,\nWoh zindagi mein kabhi nahi girta.",
-        "Kuch log bohot yaad aate hain,\nMagar unka yaad aana unhe wapas nahi laata,\nHum bas unki yaadon mein jee lete hain,\nAur zindagi yun hi guzar jati hai.",
-        "Kismat par bharosa mat karo itna,\nKe mehnat karna bhool jao,\nKismat toh unhi ka saath deti hai,\nJo apne haath se apni taqdeer likhte hain.",
-        "Muskurana ek ibadat hai,\nKisi ke gham mein kaam aana ek ibadat hai,\nZindagi mein sirf apne liye mat jiyo,\nKisi ke liye jeena bhi ek ibadat hai.",
-        "Khushi dhoondne se nahi milti,\nWoh toh andar se paida hoti hai,\nJab tum apne aap se khush hote ho,\nToh duniya ki har cheez khubsurat lagti hai.",
-        "Zindagi ek aaina hai,\nJo tum doosron ko dete ho, wohi tumhe milta hai,\nAgar pyaar doge toh pyaar milega,\nAgar nafrat doge toh nafrat milegi.",
-        "Waqt se pehle aur kismat se zyada,\nKisi ko kuch nahi milta,\nIsliye sabar rakho aur mehnat karte raho,\nTumhara waqt zaroor aayega.",
-        "Sapne dekhna bura nahi hai,\nMagar unhe poora karne ki koshish karna zaroori hai,\nSirf sapne dekhne wale kabhi kamyab nahi hote,\nKamyab woh hote hain jo unhe poora karte hain.",
-        "Duniya mein sabse mushkil kaam hai,\nKhud ko badalna,\nMagar jab tum khud ko badal lete ho,\nToh duniya khud badal jati hai.",
-        "Log tumhein tab tak nahi samjhenge,\nJab tak tum kamyab nahi ho jate,\nIsliye kisi ko samjhane mein waqt mat waste karo,\nBas apne kaam se apni pehchaan banao.",
-        "Zindagi mein jo bhi hota hai,\nKisi na kisi wajah se hota hai,\nKabhi khushi ke liye, toh kabhi sabak ke liye,\nHar cheez ko khushi se apna lo.",
-        "Rishton mein umar nahi, samajh zaroori hoti hai,\nBaaton mein shabd nahi, dil zaroori hota hai,\nPyaar mein waqt nahi, ehsaas zaroori hota hai,\nAur zindagi mein sirf jeena nahi, jee bhar ke jeena zaroori hai.",
-        "Kisi ka dil mat todo,\nKyunki dil tootne ke baad jud nahi pata,\nAur agar jud bhi jaye,\nToh us par ek nishaan reh jata hai.",
-        "Zindagi bahut choti hai,\nIsliye har pal ko jee bhar ke jiyo,\nKal ka kya pata,\nIsliye aaj ko apna best din banao.",
-        "Jo ho gaya woh ho gaya,\nAb uske baare mein soch kar kya faida,\nAage dekho, aage badho,\nZindagi rukne ka naam nahi leti.",
-        "Sach bolne mein himmat chahiye hoti hai,\nAur sach sunne mein aur bhi zyada,\nMagar jo sach se ghabrata hai,\nWoh kabhi kisi ka sacha dost nahi ban sakta.",
-        "Zindagi mein kuch pal aise aate hain,\nJo hamesha yaad rehte hain,\nKuch log aise milte hain,\nJo dil mein bas jate hain.",
-        "Apne aap ko utna hi important samjho,\nJitna tum doosron ke liye ho,\nKyunki duniya mein sab apne kaam se matlab rakhte hain,\nKoi tumhari kadar nahi karega agar tum khud nahi karo."
+        "Kuch log bohot yaad aate hain,\nMagar unka yaad aana unhe wapas nahi laata,\nHum bas unki yaadon mein jee lete hain,\nAur zindagi yun hi guzar jati hai."
     ]
 }
 
@@ -222,34 +159,32 @@ def generate_poetry(prompt: str) -> str:
 
     return generate_local_poetry(prompt)
 
-def generate_voice(poetry_text: str, output_path: str) -> bool:
-    api_key = os.getenv("ELEVENLABS_API_KEY")
-    if not api_key:
-        return False
+# ---------- FREE EDGE-TTS VOICE GENERATION (No API Key) ----------
+async def _generate_voice_async(text_for_voice: str, output_path: str):
+    # Urdu Male Voice (Asad). Aap "ur-PK-UzmaNeural" use kar sakte hain female ke liye.
+    voice = "ur-PK-AsadNeural"
+    communicate = edge_tts.Communicate(text_for_voice, voice, rate="-10%") # Rate thoda slow kiya hai
+    await communicate.save(output_path)
 
+def generate_voice(poetry_text: str, output_path: str) -> bool:
     text_for_voice = poetry_text.replace("\n", ". ")
 
     for attempt in range(3):
         try:
-            print(f"🎙️ Voice bana rahe hain (attempt {attempt+1}/3)...")
-            client = ElevenLabs(api_key=api_key)
-            audio = client.text_to_speech.convert(
-                text=text_for_voice,
-                voice_id="pNInz6obpgDQGcFmaJgB",
-                model_id="eleven_multilingual_v2",
-                voice_settings={"stability": 0.75, "similarity_boost": 0.85, "style": 0.0, "use_speaker_boost": True, "speed": 0.85}
-            )
-            with open(output_path, "wb") as f:
-                for chunk in audio:
-                    f.write(chunk)
+            print(f"🎙️ Edge-TTS Voice bana rahe hain (attempt {attempt+1}/3)...")
+            asyncio.run(_generate_voice_async(text_for_voice, output_path))
+            
             if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
                 print(f"✅ Voice ready: {output_path}")
                 return True
             else:
+                print(f"⚠️ Voice file khaali hai, dobara try...")
                 time.sleep(3)
         except Exception as e:
             print(f"⚠️ Voice attempt {attempt+1} fail: {e}")
             time.sleep(5)
+            
+    print("❌ Edge-TTS 3 baar fail - voice ke bina video banayenge")
     return False
 
 def get_audio_duration(audio_path: str) -> float:
