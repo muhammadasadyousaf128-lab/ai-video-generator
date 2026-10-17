@@ -51,76 +51,58 @@ async def serve_index():
     return FileResponse("static/index.html")
 
 
-POETRY_LINES_POOL = [
-    "Aansu chhupa ke hanste hain hum", "Dil toota hai phir bhi jee rahe hain",
-    "Tanha raaton mein yaad aati hai", "Kuch dard aise hote hain",
-    "Jo lafzon mein bayan na ho", "Khoya hoon apne hi andar",
-    "Zindagi ne dhoka diya humein", "Phir bhi muskurate hain hum",
-    "Rone ki bhi himmat nahi", "Aankhon mein sirf nami hai",
-    "Jo chala gaya woh laut kar nahi aata", "Yaadein sirf yaadein reh jaati hain",
-    "Kabhi kabhi khud se darr lagta hai", "Akela hoon is bheed mein bhi",
-    "Meri kahani koi nahi padhta", "Har muskurahat ke peeche ek dard hai",
-    "Tumhare bina sab soona hai", "Rula ke muskurana seekha hai",
-    "Dil ki baat dil mein hi reh gayi", "Waqt ne sab kuch badal diya",
-    "Zindagi ek sawaal hai", "Har jawab khud dhoondhna padta hai",
-    "Jo mila usi mein khush raho", "Kal ka kisne dekha hai",
-    "Aaj ko jee lo poora", "Waqt sabse bara ustaad hai",
-    "Dard hi asli sabak deta hai", "Khushiyan pal bhar ki hoti hain",
-    "Yaadein umar bhar saath rehti hain", "Har kisi ka apna safar hai",
-    "Utho chalo sapne dekho", "Har mushkil se aage niklo",
-    "Manzil tumhara intezaar kar rahi", "Hausla na chhodo kabhi",
-    "Raat ke baad subah aati hai", "Mehnat ka phal meetha hota hai",
-    "Himmat se kaam lo apna", "Kamyabi tumhara muqaddar hai",
-    "Zindagi ek safar hai", "Har din nayi shuruwat hai",
-    "Hausla rakho kamiyab hoge", "Girna bura nahi hota",
-    "Girke na uthna bura hai", "Himmat se utho har baar",
-    "Jeet tumhari hogi yaar", "Andhera chahe kitna bhi ho",
-    "Ek diya tum khud bano", "Roshni tumse hi aayegi",
-    "Umeed ka deep jalao", "Mushkil waqt mein bhi",
-    "Hausla na khona tum", "Rab par bharosa rakho",
-    "Manzil zaroor milegi tumhe", "Apne irado par qaayam raho",
-    "Kabhi peeche mud ke na dekho", "Waqt badalta hai har pal",
-    "Aaj ki mehnat kal ka sona", "Khud par bharosa rakho",
-    "Tum mein hai bohot dum", "Chalte raho bas chalte raho",
-    "Rukna nahi hai tumhe", "Kamyabi qareeb hai ab",
-    "Sirf ek qadam aur uthao", "Hausla buland rakho",
-    "Rab ki rehmat se sab hoga", "Sabar ka phal meetha hai",
-    "Aaj nahi toh kal hoga", "Umeed kabhi na chhodo",
-    "Apna waqt aayega zaroor", "Har subah ek tohfa hai",
-    "Tumhari yaad mein jee rahe hain", "Dil ne tumhe hi chaha tha",
-    "Tum door hue toh kya hua", "Yaadein paas rehti hain",
-    "Ishq mein sab kho diya humne", "Phir bhi pachtate nahi",
-    "Tumhare liye duniya chhodi", "Tumne hi chhod diya humein",
-    "Aansu bhi tumhare naam ke", "Dua mein tumhe maanga tha",
-    "Rab ne suna nahi humari", "Tumhari khushiyan hi meri hain",
-    "Chahe tum kisi ke ho jao", "Mera pyaar wahi rahega",
-    "Nayi subah nayi umeed laati hai", "Kal behtar hoga zaroor",
-    "Zindagi phir muskura degi", "Dard ke baad sukoon aayega",
-    "Andhere ke baad roshni hai", "Tum akela nahi ho yahan",
-    "Hum sab saath hain tumhare", "Hausla mat haarna tum",
-    "Zindagi tumse pyaar karti hai", "Khush raho, muskurao hamesha",
-    "Apne aap se pyaar karo", "Jo ho gaya use bhool jao",
-    "Aage dekho, aage badho", "Zindagi bahut khoobsurat hai",
-    "Iski qadr karo tum",
-]
+# ---------- HEART-TOUCHING COMPLETE POETRY DATABASE ----------
+# Ab random lines nahi mix hongi, balke poori ki poori deep poetry aayegi
+POETRY_DATABASE = {
+    "sad": [
+        "Raat ki tanhai mein teri yaad aati hai,\nDil rota hai magar labon par muskaan aati hai,\nKya karun is zindagi ka jo tere bin adhuri hai,\nHar khushi meri tujhse juda hui zaroori hai,\nTune chhoda toh kya, duniya toh chhod di thi maine,\nTere naam ke siwa kuch nahi bacha is dil mein,\nAb bhi duaon mein tera naam aata hai,\nDard hota hai bohot, par tujhe bhulana nahi aata.",
+        
+        "Muskurana seekh liya hai humne bhi majboori mein,\nAansu chhupa ke rakh diye hain dil ki aandhi mein,\nLog samajhte hain humein koi gham nahi,\nShayad unhe khabar nahi is toote hue dil ki,\nHar raat takiye ko bhigona aadat ho gayi,\nTeri yaadon mein jalna meri ibadat ho gayi,\nTujhe kho kar bhi tujhe hi dhoondta hoon,\nMain aaj bhi tera hi hoon, bas khud ko bhoolta hoon.",
+        
+        "Zindagi ne dhoka diya, toh kya hua,\nDil toota, toh kya hua,\nJo chala gaya woh laut kar nahi aata,\nYeh samajhna hi ek bada sabak hai,\nAankhon mein sirf nami reh gayi,\nMeri kahani koi nahi padhta,\nHar muskurahat ke peeche ek dard chhupa hai,\nAkela hoon is bheed mein bhi."
+    ],
+    "love": [
+        "Tere ishq mein humne sab kuch kho diya,\nTujhe chaha toh apne aap ko hi bhula diya,\nTere muskurane par meri duniya basar hoti hai,\nTere ek lafz par meri saari khushi thehar jati hai,\nLog kehte hain ishq ek bimari hai,\nMagar humein toh teri chahat mein guzarna acha lagta hai,\nAgar tu saath hai, toh zindagi jannat hai,\nTere bina yeh dil ek sooni viranat hai.",
+        
+        "Dil ne tumhe hi chaha tha, phir bhi tum door hue,\nYaadein paas rehti hain, hum majboor hue,\nTumhare liye duniya chhodi, tumne hi chhod diya,\nAansu bhi tumhare naam ke, har lamha jod diya,\nDua mein tumhe maanga tha, Rab ne suna nahi,\nTumhari khushiyan hi meri hain, chahe tum kisi ke ho jao abhi,\nMera pyaar wahi rahega, badlega nahi kabhi,\nTum door hue toh kya hua, dil se gaye nahi kabhi."
+    ],
+    "motivational": [
+        "Jab log tumhein thukrayein toh himmat na haarna,\nKhud par bharosa rakhna aur duniya se na darna,\nGirna toh seekhne ka ek hissa hai,\nHar patthar par thes lagne se insaan nahi banta,\nRaaston mein andhere hain toh khud roshni jalao,\nTumhari manzil tumhara intezaar kar rahi hai,\nBas ek kadam badhao, phir dekho kamaal kya hota hai,\nKabhi na rukna, kyunki jeet tumhara muqaddar hai.",
+        
+        "Utho, chalo, sapne dekho, har mushkil se aage niklo,\nRaat ke baad subah aati hai, himmat se kaam lo apna,\nMehnat ka phal meetha hota hai, yeh duniya ka usool hai,\nAndhera chahe kitna bhi ho, ek diya tum khud bano,\nRoshni tumse hi aayegi, umeed ka deep jalao,\nMushkil waqt mein bhi hausla na khona tum,\nRab par bharosa rakho, manzil zaroor milegi tumhe,\nApne irado par qaayam raho, kabhi peeche mud ke na dekho."
+    ],
+    "deep": [
+        "Zindagi ek sawaal hai, har jawab khud dhoondhna padta hai,\nJo mila usi mein khush raho, kal ka kisne dekha hai,\nWaqt sabse bara ustaad hai, dard hi asli sabak deta hai,\nKhushiyan pal bhar ki hoti hain, yaadein umar bhar saath rehti hain,\nHar kisi ka apna safar hai, apni apni manzil hai,\nAaj ki mehnat kal ka sona hai, yeh samajh lo,\nTum mein hai bohot dum, bas khud par bharosa rakho,\nSirf ek qadam aur uthao, kamyabi qareeb hai ab."
+    ]
+}
 
-def generate_local_poetry() -> str:
-    lines = random.sample(POETRY_LINES_POOL, 8)
-    poetry = "\n".join(lines)
-    print(f"✅ Local poetry (random mix):\n{poetry}")
+def generate_local_poetry(prompt: str) -> str:
+    prompt_lower = prompt.lower()
+    if any(word in prompt_lower for word in ["sad", "toot", "dukh", "breakup", "emotional", "dard"]):
+        category = "sad"
+    elif any(word in prompt_lower for word in ["love", "ishq", "pyaar", "dil", "romantic"]):
+        category = "love"
+    elif any(word in prompt_lower for word in ["motivat", "success", "kamyab", "himmat", "mehnat"]):
+        category = "motivational"
+    else:
+        category = "deep"
+        
+    poetry = random.choice(POETRY_DATABASE[category])
+    print(f"✅ Local poetry ({category}):\n{poetry}")
     return poetry
 
 def generate_poetry(prompt: str) -> str:
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        return generate_local_poetry()
+        return generate_local_poetry(prompt)
 
     models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"]
+    
+    # GEMINI PROMPT UPDATE: Ab Gemini ko force kiya gaya hai ke woh bohot deep poetry likhe
     instruction = (
-        f"Write a DEEP EMOTIONAL motivational poetry in ROMAN URDU (English letters) "
-        f"about: {prompt}. Exactly 8 lines. No title, no explanation, no quotes, no numbering. "
-        f"Just 8 lines of poetry separated by newlines. Each line should be short (max 50 characters). "
-        f"Make it emotional, touching, and rhyming. It should make people feel something deep."
+        f"You are a deep, heart-touching Urdu poet. Write a VERY emotional poetry in ROMAN URDU (English letters) "
+        f"about: {prompt}. Exactly 8 lines. It should be deeply philosophical, sad, or inspiring. "
+        f"It must make people cry or feel deeply. No title, no extra text. Just 8 lines separated by newlines."
     )
     payload = {"contents": [{"parts": [{"text": instruction}]}]}
 
@@ -151,7 +133,7 @@ def generate_poetry(prompt: str) -> str:
                 print(f"   ⚠️ {model} exception: {e}")
                 time.sleep(2)
 
-    return generate_local_poetry()
+    return generate_local_poetry(prompt)
 
 def generate_voice(poetry_text: str, output_path: str) -> bool:
     api_key = os.getenv("ELEVENLABS_API_KEY")
@@ -391,11 +373,11 @@ async def generate_video(request: PromptRequest):
         print("\n" + "=" * 50)
         print(f"📝 Prompt: {request.prompt}")
 
+        # Yahan poetry generate ho rahi hai (prompt ke hisaab se)
         poetry = generate_poetry(request.prompt)
         voice_file = os.path.join(folder, "voice.mp3")
         voice_success = generate_voice(poetry, voice_file) if poetry else False
 
-        # Ab sirf 5 images mangwa rahe hain (pehle 10 thi)
         print("\n🎨 5 images la rahe hain...")
         images = fetch_pexels_images(request.prompt, 5, folder)
 
@@ -419,7 +401,7 @@ async def generate_video(request: PromptRequest):
         return {
             "status": "success",
             "video_url": f"/static/{final_filename}",
-            "method": "5 Images + Fade + Poetry + Voice + Music",
+            "method": "5 Images + Fade + Deep Poetry + Voice + Music",
             "images_used": len(images),
             "poetry": poetry or "",
             "voice": voice_success
