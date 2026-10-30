@@ -159,30 +159,29 @@ def generate_poetry(prompt: str) -> str:
 
     return generate_local_poetry(prompt)
 
-# ---------- FREE EDGE-TTS VOICE GENERATION (No API Key) ----------
+# ---------- FREE EDGE-TTS VOICE GENERATION (FIXED FOR ASYNCIO) ----------
 async def _generate_voice_async(text_for_voice: str, output_path: str):
-    # Urdu Male Voice (Asad). Aap "ur-PK-UzmaNeural" use kar sakte hain female ke liye.
     voice = "ur-PK-AsadNeural"
-    communicate = edge_tts.Communicate(text_for_voice, voice, rate="-10%") # Rate thoda slow kiya hai
+    communicate = edge_tts.Communicate(text_for_voice, voice, rate="-10%")
     await communicate.save(output_path)
 
-def generate_voice(poetry_text: str, output_path: str) -> bool:
+async def generate_voice(poetry_text: str, output_path: str) -> bool:
     text_for_voice = poetry_text.replace("\n", ". ")
-
     for attempt in range(3):
         try:
             print(f"🎙️ Edge-TTS Voice bana rahe hain (attempt {attempt+1}/3)...")
-            asyncio.run(_generate_voice_async(text_for_voice, output_path))
+            # Yahan asyncio.run() ki jagah direct await use kiya gaya hai
+            await _generate_voice_async(text_for_voice, output_path)
             
             if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
                 print(f"✅ Voice ready: {output_path}")
                 return True
             else:
                 print(f"⚠️ Voice file khaali hai, dobara try...")
-                time.sleep(3)
+                await asyncio.sleep(3)
         except Exception as e:
             print(f"⚠️ Voice attempt {attempt+1} fail: {e}")
-            time.sleep(5)
+            await asyncio.sleep(5)
             
     print("❌ Edge-TTS 3 baar fail - voice ke bina video banayenge")
     return False
@@ -393,7 +392,9 @@ async def generate_video(request: PromptRequest):
 
         poetry = generate_poetry(request.prompt)
         voice_file = os.path.join(folder, "voice.mp3")
-        voice_success = generate_voice(poetry, voice_file) if poetry else False
+        
+        # Yahan await add kiya gaya hai
+        voice_success = await generate_voice(poetry, voice_file) if poetry else False
 
         print("\n🎨 5 images la rahe hain...")
         images = fetch_pexels_images(request.prompt, 5, folder)
