@@ -4,5 +4,5 @@ python-dotenv
 requests
 opencv-python-headless
 numpy
-edge-tts
+gTTS
 python-multipart
