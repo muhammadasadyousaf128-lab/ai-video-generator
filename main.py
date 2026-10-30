@@ -163,7 +163,6 @@ def generate_voice(poetry_text: str, output_path: str) -> bool:
     text_for_voice = poetry_text.replace("\n", ". ")
     try:
         print(f"🎙️ Google TTS Voice bana rahe hain...")
-        # lang='hi' (Hindi) Roman Urdu ko bilkul natural padhta hai
         tts = gTTS(text=text_for_voice, lang='hi', slow=False)
         tts.save(output_path)
         
@@ -343,24 +342,44 @@ def create_video(image_paths, output_path, poetry_text, voice_file):
         has_voice = voice_file and os.path.exists(voice_file)
 
         if has_voice and music_file:
+            # Fixed Audio Mixing Command
             cmd_final = [
-                "ffmpeg", "-y", "-i", temp_video2, "-i", voice_file, "-i", music_file,
-                "-filter_complex", "[1:a]volume=1.5[voice];[2:a]volume=0.25[music];[voice][music]amix=inputs=2:duration=first:dropout_transition=3[aout]",
-                "-map", "0:v", "-map", "[aout]", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", output_path
+                "ffmpeg", "-y",
+                "-i", temp_video2,
+                "-i", voice_file,
+                "-i", music_file,
+                "-filter_complex",
+                "[1:a]aresample=44100,volume=2.0[voice];[2:a]aresample=44100,volume=0.15[music];[voice][music]amix=inputs=2:duration=first:dropout_transition=3[aout]",
+                "-map", "0:v", "-map", "[aout]",
+                "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+                "-shortest", "-movflags", "+faststart", output_path
             ]
             r = subprocess.run(cmd_final, capture_output=True, text=True, timeout=60)
             if r.returncode == 0:
+                print(f"✅ Voice + Music successfully synced")
                 return True
             else:
+                print(f"❌ Mixing failed: {r.stderr[-500:]}")
                 shutil.move(temp_video2, output_path)
                 return True
         elif has_voice:
-            r = subprocess.run(["ffmpeg", "-y", "-i", temp_video2, "-i", voice_file, "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", output_path], capture_output=True, text=True, timeout=60)
+            # If only voice is present (no music)
+            r = subprocess.run([
+                "ffmpeg", "-y", "-i", temp_video2, "-i", voice_file,
+                "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", 
+                "-shortest", "-movflags", "+faststart", output_path
+            ], capture_output=True, text=True, timeout=60)
             return True
         elif music_file:
-            r = subprocess.run(["ffmpeg", "-y", "-i", temp_video2, "-i", music_file, "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", output_path], capture_output=True, text=True, timeout=60)
+            # If only music is present (no voice)
+            r = subprocess.run([
+                "ffmpeg", "-y", "-i", temp_video2, "-i", music_file,
+                "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", 
+                "-shortest", "-movflags", "+faststart", output_path
+            ], capture_output=True, text=True, timeout=60)
             return True
         else:
+            # No audio at all
             shutil.move(temp_video2, output_path)
             return True
 
