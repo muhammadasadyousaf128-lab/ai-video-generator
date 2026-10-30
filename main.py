@@ -4,6 +4,7 @@ from fastapi.responses import FileResponse
 from starlette.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from gtts import gTTS
 import os
 import time
 import random
@@ -11,8 +12,6 @@ import urllib.parse
 import shutil
 import subprocess
 import requests
-import asyncio
-import edge_tts
 
 load_dotenv()
 
@@ -159,32 +158,24 @@ def generate_poetry(prompt: str) -> str:
 
     return generate_local_poetry(prompt)
 
-# ---------- FREE EDGE-TTS VOICE GENERATION (FIXED FOR ASYNCIO) ----------
-async def _generate_voice_async(text_for_voice: str, output_path: str):
-    voice = "ur-PK-AsadNeural"
-    communicate = edge_tts.Communicate(text_for_voice, voice, rate="-10%")
-    await communicate.save(output_path)
-
-async def generate_voice(poetry_text: str, output_path: str) -> bool:
+# ---------- GOOGLE TTS VOICE GENERATION ----------
+def generate_voice(poetry_text: str, output_path: str) -> bool:
     text_for_voice = poetry_text.replace("\n", ". ")
-    for attempt in range(3):
-        try:
-            print(f"🎙️ Edge-TTS Voice bana rahe hain (attempt {attempt+1}/3)...")
-            # Yahan asyncio.run() ki jagah direct await use kiya gaya hai
-            await _generate_voice_async(text_for_voice, output_path)
-            
-            if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-                print(f"✅ Voice ready: {output_path}")
-                return True
-            else:
-                print(f"⚠️ Voice file khaali hai, dobara try...")
-                await asyncio.sleep(3)
-        except Exception as e:
-            print(f"⚠️ Voice attempt {attempt+1} fail: {e}")
-            await asyncio.sleep(5)
-            
-    print("❌ Edge-TTS 3 baar fail - voice ke bina video banayenge")
-    return False
+    try:
+        print(f"🎙️ Google TTS Voice bana rahe hain...")
+        # lang='hi' (Hindi) Roman Urdu ko bilkul natural padhta hai
+        tts = gTTS(text=text_for_voice, lang='hi', slow=False)
+        tts.save(output_path)
+        
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
+            print(f"✅ Voice ready: {output_path}")
+            return True
+        else:
+            print(f"⚠️ Voice file khaali hai")
+            return False
+    except Exception as e:
+        print(f"⚠️ Voice fail: {e}")
+        return False
 
 def get_audio_duration(audio_path: str) -> float:
     try:
@@ -392,9 +383,7 @@ async def generate_video(request: PromptRequest):
 
         poetry = generate_poetry(request.prompt)
         voice_file = os.path.join(folder, "voice.mp3")
-        
-        # Yahan await add kiya gaya hai
-        voice_success = await generate_voice(poetry, voice_file) if poetry else False
+        voice_success = generate_voice(poetry, voice_file) if poetry else False
 
         print("\n🎨 5 images la rahe hain...")
         images = fetch_pexels_images(request.prompt, 5, folder)
