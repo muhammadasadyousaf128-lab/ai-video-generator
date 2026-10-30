@@ -4,7 +4,6 @@ from fastapi.responses import FileResponse
 from starlette.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from gtts import gTTS
 import os
 import time
 import random
@@ -158,20 +157,50 @@ def generate_poetry(prompt: str) -> str:
 
     return generate_local_poetry(prompt)
 
-# ---------- GOOGLE TTS VOICE GENERATION ----------
+# ---------- PIPER TTS VOICE GENERATION (OFFLINE & FREE) ----------
 def generate_voice(poetry_text: str, output_path: str) -> bool:
     text_for_voice = poetry_text.replace("\n", ". ")
     try:
-        print(f"🎙️ Google TTS Voice bana rahe hain...")
-        tts = gTTS(text=text_for_voice, lang='hi', slow=False)
-        tts.save(output_path)
+        print(f"🎙️ Piper TTS Voice bana rahe hain...")
         
-        if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
+        # Piper TTS Urdu voice model
+        model_name = "ur_PK-fasih-medium"
+        model_path = f"/tmp/{model_name}.onnx"
+        config_path = f"/tmp/{model_name}.onnx.json"
+        
+        # Agar model download nahi hua toh download karo
+        if not os.path.exists(model_path):
+            print("📥 Urdu voice model download kar rahe hain...")
+            base_url = f"https://huggingface.co/rhasspy/piper-voices/resolve/main/ur/ur_PK/fasih/medium/{model_name}"
+            
+            # Download model
+            r = requests.get(f"{base_url}.onnx", timeout=180)
+            with open(model_path, "wb") as f:
+                f.write(r.content)
+                
+            # Download config
+            r = requests.get(f"{base_url}.onnx.json", timeout=60)
+            with open(config_path, "wb") as f:
+                f.write(r.content)
+            print("✅ Model download ho gaya")
+
+        # Piper TTS run karo
+        cmd = [
+            "python", "-m", "piper",
+            "--model", model_path,
+            "--config", config_path,
+            "--output_file", output_path
+        ]
+        
+        process = subprocess.run(cmd, input=text_for_voice, capture_output=True, text=True, timeout=60)
+        
+        if process.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
             print(f"✅ Voice ready: {output_path}")
             return True
         else:
-            print(f"⚠️ Voice file khaali hai")
+            print(f"⚠️ Piper TTS fail: {process.stderr}")
             return False
+            
     except Exception as e:
         print(f"⚠️ Voice fail: {e}")
         return False
@@ -342,44 +371,30 @@ def create_video(image_paths, output_path, poetry_text, voice_file):
         has_voice = voice_file and os.path.exists(voice_file)
 
         if has_voice and music_file:
-            # Fixed Audio Mixing Command
             cmd_final = [
                 "ffmpeg", "-y",
                 "-i", temp_video2,
                 "-i", voice_file,
                 "-i", music_file,
                 "-filter_complex",
-                "[1:a]aresample=44100,volume=2.0[voice];[2:a]aresample=44100,volume=0.15[music];[voice][music]amix=inputs=2:duration=first:dropout_transition=3[aout]",
+                "[1:a]aresample=44100,volume=1.5[voice];[2:a]aresample=44100,volume=0.25[music];[voice][music]amix=inputs=2:duration=first:dropout_transition=3[aout]",
                 "-map", "0:v", "-map", "[aout]",
-                "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+                "-c:v", "copy", "-c:a", "aac", "-b:a", "128k",
                 "-shortest", "-movflags", "+faststart", output_path
             ]
             r = subprocess.run(cmd_final, capture_output=True, text=True, timeout=60)
             if r.returncode == 0:
-                print(f"✅ Voice + Music successfully synced")
                 return True
             else:
-                print(f"❌ Mixing failed: {r.stderr[-500:]}")
                 shutil.move(temp_video2, output_path)
                 return True
         elif has_voice:
-            # If only voice is present (no music)
-            r = subprocess.run([
-                "ffmpeg", "-y", "-i", temp_video2, "-i", voice_file,
-                "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", 
-                "-shortest", "-movflags", "+faststart", output_path
-            ], capture_output=True, text=True, timeout=60)
+            r = subprocess.run(["ffmpeg", "-y", "-i", temp_video2, "-i", voice_file, "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", output_path], capture_output=True, text=True, timeout=60)
             return True
         elif music_file:
-            # If only music is present (no voice)
-            r = subprocess.run([
-                "ffmpeg", "-y", "-i", temp_video2, "-i", music_file,
-                "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", 
-                "-shortest", "-movflags", "+faststart", output_path
-            ], capture_output=True, text=True, timeout=60)
+            r = subprocess.run(["ffmpeg", "-y", "-i", temp_video2, "-i", music_file, "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", output_path], capture_output=True, text=True, timeout=60)
             return True
         else:
-            # No audio at all
             shutil.move(temp_video2, output_path)
             return True
 
@@ -401,7 +416,7 @@ async def generate_video(request: PromptRequest):
         print(f"📝 Prompt: {request.prompt}")
 
         poetry = generate_poetry(request.prompt)
-        voice_file = os.path.join(folder, "voice.mp3")
+        voice_file = os.path.join(folder, "voice.wav")
         voice_success = generate_voice(poetry, voice_file) if poetry else False
 
         print("\n🎨 5 images la rahe hain...")
