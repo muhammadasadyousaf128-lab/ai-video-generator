@@ -84,31 +84,38 @@ def process_custom_poetry(text: str) -> str:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key: return "ERROR_CONVERT"
         
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
         instruction = (
             f"Transliterate the following Urdu text into Roman Urdu (English letters). "
             f"Do not translate it, just write the exact pronunciation in English letters. "
             f"Do not add any extra words. Output only the transliterated text:\n\n{text}"
         )
         payload = {"contents": [{"parts": [{"text": instruction}]}]}
-        try:
-            r = requests.post(url, json=payload, timeout=30)
-            if r.status_code == 200:
-                data = r.json()
-                converted = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                print(f"✅ Converted to: {converted}")
-                return converted
-            else:
-                return "ERROR_CONVERT"
-        except:
-            return "ERROR_CONVERT"
+
+        for model in models:
+            for attempt in range(2): # 2 baar try karega har model par
+                try:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+                    r = requests.post(url, json=payload, timeout=60) # Timeout badha diya
+                    if r.status_code == 200:
+                        data = r.json()
+                        converted = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                        print(f"✅ Converted to: {converted}")
+                        return converted
+                    else:
+                        print(f"⚠️ Model {model} failed with status {r.status_code}")
+                except Exception as e:
+                    print(f"⚠️ Model {model} exception: {e}")
+                    time.sleep(2)
+                    
+        return "ERROR_CONVERT"
     return text
 
 def generate_poetry(prompt: str, poetry_type: str, custom_poetry: str) -> str:
     if poetry_type == "custom" and custom_poetry.strip():
         converted = process_custom_poetry(custom_poetry.strip())
         if converted == "ERROR_CONVERT":
-            return "" # Trigger error in main endpoint
+            return "" # Trigger error
         return converted
         
     api_key = os.getenv("GEMINI_API_KEY")
@@ -209,8 +216,6 @@ def create_video_from_images(image_paths, output_path, poetry_text, voice_file):
     try:
         folder = os.path.dirname(image_paths[0])
         voice_duration = get_audio_duration(voice_file) if voice_file else 0.0
-        
-        # Force 20s minimum
         video_duration = max(voice_duration + 2.0, 20.0)
         text_duration = voice_duration if voice_duration > 0 else video_duration
         
@@ -242,7 +247,6 @@ def create_video_from_images(image_paths, output_path, poetry_text, voice_file):
         has_voice = voice_file and os.path.exists(voice_file)
 
         if has_voice and music_file:
-            # REMOVED -shortest AND ADDED -t video_duration to ensure 20s video
             subprocess.run(["ffmpeg", "-y", "-i", temp_vid_text, "-i", voice_file, "-i", music_file, "-filter_complex", "[1:a]volume=1.5[voice];[2:a]volume=0.15[music];[voice][music]amix=inputs=2:duration=longest:dropout_transition=3[aout]", "-map", "0:v", "-map", "[aout]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-t", f"{video_duration:.3f}", "-movflags", "+faststart", output_path], capture_output=True)
         elif has_voice:
             subprocess.run(["ffmpeg", "-y", "-i", temp_vid_text, "-i", voice_file, "-c:v", "copy", "-c:a", "aac", "-t", f"{video_duration:.3f}", "-movflags", "+faststart", output_path], capture_output=True)
@@ -254,8 +258,6 @@ def create_video_from_clips(video_paths, output_path, poetry_text, voice_file):
     try:
         folder = os.path.dirname(video_paths[0])
         voice_duration = get_audio_duration(voice_file) if voice_file else 0.0
-        
-        # Force 20s minimum
         video_duration = max(voice_duration + 2.0, 20.0)
         text_duration = voice_duration if voice_duration > 0 else video_duration
 
@@ -278,7 +280,6 @@ def create_video_from_clips(video_paths, output_path, poetry_text, voice_file):
         has_voice = voice_file and os.path.exists(voice_file)
 
         if has_voice and music_file:
-            # REMOVED -shortest AND ADDED -t video_duration
             subprocess.run(["ffmpeg", "-y", "-i", temp_video_text, "-i", voice_file, "-i", music_file, "-filter_complex", "[1:a]volume=1.5[voice];[2:a]volume=0.15[music];[voice][music]amix=inputs=2:duration=longest:dropout_transition=3[aout]", "-map", "0:v", "-map", "[aout]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-t", f"{video_duration:.3f}", "-movflags", "+faststart", output_path], capture_output=True)
         elif has_voice:
             subprocess.run(["ffmpeg", "-y", "-i", temp_video_text, "-i", voice_file, "-c:v", "copy", "-c:a", "aac", "-t", f"{video_duration:.3f}", "-movflags", "+faststart", output_path], capture_output=True)
@@ -300,7 +301,7 @@ async def generate_video(request: PromptRequest):
         poetry = generate_poetry(request.prompt, request.poetry_type, request.custom_poetry)
         
         if not poetry:
-            return {"status": "error", "message": "Urdu text Roman mein convert nahi ho saka. Please Roman Urdu (English letters) mein likhein."}
+            return {"status": "error", "message": "Urdu text Roman mein convert nahi ho saka. Please Roman Urdu (English letters) mein likhein ya thori der baad try karein."}
 
         voice_file = os.path.join(folder, "voice.mp3")
         voice_success = generate_voice(poetry, voice_file) if poetry else False
