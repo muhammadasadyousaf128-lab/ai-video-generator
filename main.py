@@ -78,23 +78,41 @@ def generate_local_poetry(prompt: str) -> str:
         category = "deep"
     return random.choice(POETRY_DATABASE[category])
 
-def process_custom_poetry(text: str) -> str:
-    """Convert Urdu script to Roman Urdu using offline uroman library."""
+def convert_to_roman_for_screen(text: str) -> str:
+    """Convert Urdu script to Roman Urdu for Screen."""
     if any('\u0600' <= char <= '\u06FF' for char in text):
-        print("🔄 Urdu script detected. Converting to Roman Urdu offline...")
         try:
             uroman_instance = ur.Uroman()
-            romanized_text = uroman_instance.romanize_string(text)
-            print(f"✅ Converted to: {romanized_text}")
-            return romanized_text
-        except Exception as e:
-            print(f"⚠️ Local conversion failed: {e}")
-            return text
+            return uroman_instance.romanize_string(text)
+        except: return text
+    return text
+
+def convert_roman_to_hindi(text: str) -> str:
+    """Convert Roman Urdu to Hindi (Devanagari) for natural TTS."""
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key: return text
+    
+    instruction = (
+        f"You are a transliteration expert. Convert the following Roman Urdu text into Hindi (Devanagari) script. "
+        f"Do NOT translate. Only transliterate. Example: 'meri zindagi' -> 'मेरी ज़िंदगी'. "
+        f"Output ONLY the Devanagari text.\n\n{text}"
+    )
+    payload = {"contents": [{"parts": [{"text": instruction}]}]}
+    models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
+    
+    for model in models:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            r = requests.post(url, json=payload, timeout=30)
+            if r.status_code == 200:
+                data = r.json()
+                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        except: pass
     return text
 
 def generate_poetry(prompt: str, poetry_type: str, custom_poetry: str) -> str:
     if poetry_type == "custom" and custom_poetry.strip():
-        return process_custom_poetry(custom_poetry.strip())
+        return convert_to_roman_for_screen(custom_poetry.strip())
         
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key: return generate_local_poetry(prompt)
@@ -119,43 +137,29 @@ def generate_poetry(prompt: str, poetry_type: str, custom_poetry: str) -> str:
         except: pass
     return generate_local_poetry(prompt)
 
-# ---------- NEW: CONVERT TO HINDI SCRIPT FOR PERFECT TTS ----------
-def convert_to_hindi_for_tts(text: str) -> str:
-    """Convert Roman Urdu/Urdu script to Hindi (Devanagari) for perfect TTS pronunciation."""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key: return text
-    
-    instruction = (
-        f"Transliterate the following Urdu text (which might be written in Roman English or Urdu script) into Hindi (Devanagari) script. "
-        f"Do not translate the meaning. Just convert the pronunciation into Devanagari letters so a Hindi text-to-speech engine can read it perfectly. "
-        f"Output ONLY the converted text.\n\n{text}"
-    )
-    payload = {"contents": [{"parts": [{"text": instruction}]}]}
-    
-    models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
-    for model in models:
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-            r = requests.post(url, json=payload, timeout=30)
-            if r.status_code == 200:
-                data = r.json()
-                converted = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                return converted
-        except: pass
-        
-    return text # Fallback to Roman if Gemini fails
-
-def generate_voice(poetry_text: str, output_path: str) -> bool:
-    # Convert to Hindi script so gTTS doesn't spell out English letters
-    tts_script = convert_to_hindi_for_tts(poetry_text)
-    text_for_voice = tts_script.replace("\n", ". ")
-    
+def generate_voice(screen_poetry: str, original_poetry: str, output_path: str) -> bool:
     try:
-        print(f"🎙️ Generating Voice with Hindi Script: {text_for_voice[:50]}...")
-        tts = gTTS(text=text_for_voice, lang='hi', slow=False)
+        # Check if user typed in Urdu Script
+        is_urdu_script = any('\u0600' <= char <= '\u06FF' for char in original_poetry)
+        
+        if is_urdu_script:
+            print("🎙️ Using native Urdu TTS for perfect pronunciation...")
+            text_for_voice = original_poetry.replace("\n", ". ")
+            lang = 'ur'
+        else:
+            print("🎙️ Converting Roman Urdu to Hindi for perfect TTS...")
+            hindi_text = convert_roman_to_hindi(screen_poetry)
+            text_for_voice = hindi_text.replace("\n", ". ")
+            lang = 'hi'
+            if not any('\u0900' <= c <= '\u097F' for c in hindi_text):
+                print("⚠️ Gemini failed to convert to Hindi. Using Roman text with Hindi TTS (might sound off).")
+
+        tts = gTTS(text=text_for_voice, lang=lang, slow=False)
         tts.save(output_path)
         return os.path.exists(output_path) and os.path.getsize(output_path) > 1000
-    except: return False
+    except Exception as e:
+        print(f"❌ Voice Error: {e}")
+        return False
 
 def get_audio_duration(audio_path: str) -> float:
     try:
@@ -306,24 +310,26 @@ async def generate_video(request: PromptRequest):
 
         print(f"\n📝 Prompt: {request.prompt} | Type: {request.background_type} | Poetry: {request.poetry_type}")
 
-        poetry = generate_poetry(request.prompt, request.poetry_type, request.custom_poetry)
+        poetry_for_screen = generate_poetry(request.prompt, request.poetry_type, request.custom_poetry)
         
-        if not poetry:
-            return {"status": "error", "message": "Text processing failed. Please check input."}
+        if not poetry_for_screen:
+            return {"status": "error", "message": "Poetry generate nahi ho saki."}
 
         voice_file = os.path.join(folder, "voice.mp3")
-        voice_success = generate_voice(poetry, voice_file) if poetry else False
+        original_text = request.custom_poetry if request.poetry_type == "custom" else poetry_for_screen
+        
+        voice_success = generate_voice(poetry_for_screen, original_text, voice_file)
 
         if request.background_type == "image":
             print("🖼️ Images la rahe hain...")
             images = fetch_pexels_images(request.prompt, 5, folder)
             if len(images) < 2: return {"status": "error", "message": "Images nahi mili"}
-            success = create_video_from_images(images, final_path, poetry, voice_file if voice_success else None)
+            success = create_video_from_images(images, final_path, poetry_for_screen, voice_file if voice_success else None)
         else:
             print("🎬 Video Clips la rahe hain...")
             videos = fetch_pexels_videos(request.prompt, 3, folder)
             if len(videos) < 1: return {"status": "error", "message": "Videos nahi mili"}
-            success = create_video_from_clips(videos, final_path, poetry, voice_file if voice_success else None)
+            success = create_video_from_clips(videos, final_path, poetry_for_screen, voice_file if voice_success else None)
 
         shutil.rmtree(folder, ignore_errors=True)
 
