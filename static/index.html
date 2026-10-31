@@ -6,25 +6,39 @@
     <title>A1 Y Video Maker</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); padding: 40px; max-width: 800px; width: 100%; }
-        h1 { text-align: center; color: #333; font-size: 32px; margin-bottom: 5px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .branding { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; font-weight: 600; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; min-height: 100vh; background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); padding: 30px; max-width: 800px; width: 100%; }
+        h1 { text-align: center; color: #333; font-size: 30px; margin-bottom: 5px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .branding { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; font-weight: 600; }
         .branding span { color: #764ba2; font-weight: bold; }
         
         .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        input { flex: 1; padding: 15px 20px; font-size: 16px; border: 2px solid #e0e0e0; border-radius: 12px; outline: none; transition: all 0.3s; }
-        input:focus { border-color: #667eea; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15); }
-        button { padding: 15px 30px; font-size: 16px; font-weight: bold; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
-        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4); }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        input[type="text"] { flex: 1; padding: 15px 20px; font-size: 16px; border: 2px solid #e0e0e0; border-radius: 12px; outline: none; transition: all 0.3s; }
+        input[type="text"]:focus { border-color: #667eea; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15); }
         
-        /* Background Toggle Buttons */
+        /* Custom Poetry Section */
+        .poetry-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
+        .p-btn { flex: 1; padding: 10px; border: 2px solid #e0e0e0; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .p-btn.active { border-color: #764ba2; background: #f3e8ff; color: #764ba2; }
+        
+        .custom-box { display: none; margin-bottom: 15px; position: relative; }
+        textarea { width: 100%; height: 100px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; resize: none; outline: none; font-family: inherit;}
+        textarea:focus { border-color: #667eea; }
+        
+        /* Mic Button */
+        .mic-btn { position: absolute; bottom: 15px; right: 15px; background: #ff4757; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4); transition: 0.3s; }
+        .mic-btn.recording { background: #2ed573; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 213, 115, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); } }
+
         .bg-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
         .bg-btn { flex: 1; padding: 12px; border: 2px solid #e0e0e0; background: white; color: #666; border-radius: 12px; cursor: pointer; transition: all 0.3s; font-weight: 600; font-size: 14px;}
         .bg-btn.active { border-color: #667eea; background: #f0f4ff; color: #667eea; }
 
-        .status { text-align: center; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-weight: 600; min-height: 50px; display: flex; align-items: center; justify-content: center; }
+        button.main-btn { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s; }
+        button.main-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4); }
+        button.main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .status { text-align: center; padding: 15px; border-radius: 12px; margin-top: 20px; font-weight: 600; min-height: 50px; display: flex; align-items: center; justify-content: center; }
         .status.idle { background: #f0f0f0; color: #666; }
         .status.loading { background: #fff3cd; color: #856404; }
         .status.success { background: #d4edda; color: #155724; }
@@ -32,19 +46,16 @@
         .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(0,0,0,0.1); border-top-color: #856404; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        .video-wrapper { display: none; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 15px; position: relative; }
+        .video-wrapper { display: none; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 20px; position: relative; }
         video { width: 100%; display: block; background: black; }
         
         .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
         .play-overlay-btn { background: rgba(255, 255, 255, 0.9); color: #333; border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s; }
-        .play-overlay:hover .play-overlay-btn { transform: scale(1.1); }
-
-        .download-btn, .share-btn { display: none; text-align: center; padding: 15px; color: white; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 18px; transition: all 0.3s; margin-top: 10px; width: 100%; border: none; cursor: pointer; }
-        .download-btn { background: #28a745; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); }
-        .download-btn:hover { background: #218838; transform: translateY(-2px); }
-        .share-btn { background: #25D366; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); }
-        .share-btn:hover { background: #128C7E; transform: translateY(-2px); }
-        @media (max-width: 600px) { .container { padding: 25px; } h1 { font-size: 26px; } .input-group { flex-direction: column; } button { width: 100%; } }
+        
+        .action-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .download-btn, .share-btn { display: none; flex: 1; text-align: center; padding: 15px; color: white; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; transition: all 0.3s; border: none; cursor: pointer; }
+        .download-btn { background: #28a745; }
+        .share-btn { background: #25D366; }
     </style>
 </head>
 <body>
@@ -53,16 +64,26 @@
         <p class="branding">An initiative by <span>A1 Yousaf Studio</span></p>
 
         <div class="input-group">
-            <input id="prompt" placeholder="Enter your prompt..." value="Motivational sad story" />
+            <input type="text" id="prompt" placeholder="Video ka topic (e.g., Sad love story)..." value="Sad love story" />
         </div>
 
-        <!-- Background Selection -->
+        <!-- Custom Poetry Toggle -->
+        <div class="poetry-toggle">
+            <button id="btn-ai-poetry" class="p-btn active" onclick="setPoetryType('ai')">🤖 AI Poetry</button>
+            <button id="btn-my-poetry" class="p-btn" onclick="setPoetryType('custom')">✍️ Apni Poetry</button>
+        </div>
+
+        <div id="customPoetryBox" class="custom-box">
+            <textarea id="customPoetry" placeholder="Yahan apni poetry likhein (Roman Urdu) ya Mic dabakar bolein..."></textarea>
+            <button id="micBtn" class="mic-btn" onclick="startSpeech()">🎤</button>
+        </div>
+
         <div class="bg-toggle">
-            <button id="btn-video" class="bg-btn active" onclick="setBgType('video')">🎬 Real Video (Reels)</button>
+            <button id="btn-video" class="bg-btn active" onclick="setBgType('video')">🎬 Moving Video</button>
             <button id="btn-image" class="bg-btn" onclick="setBgType('image')">🖼️ AI Images</button>
         </div>
 
-        <button id="generateBtn" onclick="generate()" style="width: 100%; margin-bottom: 20px;">Generate Video</button>
+        <button id="generateBtn" class="main-btn" onclick="generate()">Generate Video</button>
 
         <div id="status" class="status idle">Ready to create</div>
 
@@ -73,13 +94,67 @@
             </div>
         </div>
 
-        <a id="downloadBtn" href="#" download="a1-y-video.mp4" class="download-btn">⬇️ Download Video</a>
-        <a id="shareBtn" href="#" target="_blank" class="share-btn">📲 Share on WhatsApp</a>
+        <div class="action-btns">
+            <a id="downloadBtn" href="#" download="a1-y-video.mp4" class="download-btn">⬇️ Download</a>
+            <a id="shareBtn" href="#" target="_blank" class="share-btn">📲 Share</a>
+        </div>
     </div>
 
     <script>
         const BACKEND = window.location.origin;
         let currentBgType = 'video';
+        let currentPoetryType = 'ai';
+        let recognition;
+
+        // Speech Recognition Setup
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'ur-PK'; // Urdu Language
+
+            recognition.onresult = function(event) {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    }
+                }
+                if (finalTranscript) {
+                    document.getElementById('customPoetry').value += finalTranscript + " ";
+                }
+            };
+
+            recognition.onerror = function(event) {
+                alert("Mic Error: " + event.error);
+                document.getElementById('micBtn').classList.remove('recording');
+            };
+        } else {
+            alert("Aapka browser Voice-to-Text support nahi karta. Please Chrome use karein.");
+        }
+
+        function startSpeech() {
+            if (!recognition) return;
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn.classList.contains('recording')) {
+                recognition.stop();
+                micBtn.classList.remove('recording');
+            } else {
+                recognition.start();
+                micBtn.classList.add('recording');
+                micBtn.innerText = "⏹️";
+            }
+        }
+
+        function setPoetryType(type) {
+            currentPoetryType = type;
+            document.getElementById('btn-ai-poetry').classList.remove('active');
+            document.getElementById('btn-my-poetry').classList.remove('active');
+            document.getElementById('btn-' + (type === 'ai' ? 'ai-poetry' : 'my-poetry')).classList.add('active');
+            
+            document.getElementById('customPoetryBox').style.display = type === 'custom' ? 'block' : 'none';
+        }
 
         function setBgType(type) {
             currentBgType = type;
@@ -99,6 +174,7 @@
 
         async function generate() {
             const prompt = document.getElementById('prompt').value;
+            const customPoetry = document.getElementById('customPoetry').value;
             const statusEl = document.getElementById('status');
             const videoEl = document.getElementById('video');
             const videoWrapper = document.getElementById('videoWrapper');
@@ -109,7 +185,12 @@
 
             if (!prompt.trim()) {
                 statusEl.className = 'status error';
-                statusEl.innerText = '⚠️ Prompt likhna zaroori hai';
+                statusEl.innerText = '⚠️ Topic likhna zaroori hai';
+                return;
+            }
+            if (currentPoetryType === 'custom' && !customPoetry.trim()) {
+                statusEl.className = 'status error';
+                statusEl.innerText = '⚠️ Apni poetry likhein ya Mic dabayein';
                 return;
             }
 
@@ -125,7 +206,12 @@
                 const res = await fetch(BACKEND + '/generate-video', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt, background_type: currentBgType })
+                    body: JSON.stringify({ 
+                        prompt: prompt, 
+                        background_type: currentBgType,
+                        poetry_type: currentPoetryType,
+                        custom_poetry: customPoetry
+                    })
                 });
                 const data = await res.json();
 
@@ -144,7 +230,6 @@
                     const message = "Maine yeh AI video A1 Yousaf Studio se banayi hai. Dekhein:\n" + url;
                     shareBtn.href = "https://wa.me/?text=" + encodeURIComponent(message);
                     shareBtn.style.display = 'block';
-                    
                 } else {
                     statusEl.className = 'status error';
                     statusEl.innerText = '❌ Error: ' + data.message;
