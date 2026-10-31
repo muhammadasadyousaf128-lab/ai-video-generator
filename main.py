@@ -5,6 +5,7 @@ from starlette.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from gtts import gTTS
+import uroman as ur
 import os
 import time
 import random
@@ -77,51 +78,32 @@ def generate_local_poetry(prompt: str) -> str:
         category = "deep"
     return random.choice(POETRY_DATABASE[category])
 
+# ---------- NEW OFFLINE URDU TO ROMAN CONVERTER ----------
 def process_custom_poetry(text: str) -> str:
-    """Agar user Urdu script mein likhta hai, toh usko pakka Roman Urdu mein convert karo."""
+    """Agar user Urdu script mein likhta hai, toh usko uroman library se Roman Urdu mein convert karo."""
     if any('\u0600' <= char <= '\u06FF' for char in text):
-        print("🔄 Urdu script detected. Converting to Roman Urdu via Gemini...")
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key: return "ERROR_CONVERT"
-        
-        models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
-        instruction = (
-            f"Transliterate the following Urdu text into Roman Urdu (English letters). "
-            f"Do not translate it, just write the exact pronunciation in English letters. "
-            f"Do not add any extra words. Output only the transliterated text:\n\n{text}"
-        )
-        payload = {"contents": [{"parts": [{"text": instruction}]}]}
-
-        for model in models:
-            for attempt in range(2): # 2 baar try karega har model par
-                try:
-                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-                    r = requests.post(url, json=payload, timeout=60) # Timeout badha diya
-                    if r.status_code == 200:
-                        data = r.json()
-                        converted = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                        print(f"✅ Converted to: {converted}")
-                        return converted
-                    else:
-                        print(f"⚠️ Model {model} failed with status {r.status_code}")
-                except Exception as e:
-                    print(f"⚠️ Model {model} exception: {e}")
-                    time.sleep(2)
-                    
-        return "ERROR_CONVERT"
+        print("🔄 Urdu script detected. Converting to Roman Urdu offline...")
+        try:
+            uroman_instance = ur.Uroman()
+            romanized_text = uroman_instance.romanize_string(text)
+            print(f"✅ Converted to: {romanized_text}")
+            return romanized_text
+        except Exception as e:
+            print(f"⚠️ Local conversion failed: {e}")
+            return "ERROR_CONVERT"
     return text
 
 def generate_poetry(prompt: str, poetry_type: str, custom_poetry: str) -> str:
     if poetry_type == "custom" and custom_poetry.strip():
         converted = process_custom_poetry(custom_poetry.strip())
         if converted == "ERROR_CONVERT":
-            return "" # Trigger error
+            return ""
         return converted
         
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key: return generate_local_poetry(prompt)
 
-    models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"]
+    models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
     instruction = (
         f"You are a legendary, deeply emotional Urdu poet. Write a heart-touching, soulful poetry in ROMAN URDU (English letters) "
         f"about: {prompt}. Exactly 8 lines. Use deep metaphors. "
@@ -301,7 +283,7 @@ async def generate_video(request: PromptRequest):
         poetry = generate_poetry(request.prompt, request.poetry_type, request.custom_poetry)
         
         if not poetry:
-            return {"status": "error", "message": "Urdu text Roman mein convert nahi ho saka. Please Roman Urdu (English letters) mein likhein ya thori der baad try karein."}
+            return {"status": "error", "message": "Urdu text Roman mein convert nahi ho saka. Please check karein."}
 
         voice_file = os.path.join(folder, "voice.mp3")
         voice_success = generate_voice(poetry, voice_file) if poetry else False
