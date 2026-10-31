@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Yousaf Video Generator</title>
+    <title>A1 Y Video Maker</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -11,12 +11,19 @@
         h1 { text-align: center; color: #333; font-size: 32px; margin-bottom: 5px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .branding { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; font-weight: 600; }
         .branding span { color: #764ba2; font-weight: bold; }
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        
+        .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
         input { flex: 1; padding: 15px 20px; font-size: 16px; border: 2px solid #e0e0e0; border-radius: 12px; outline: none; transition: all 0.3s; }
         input:focus { border-color: #667eea; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15); }
         button { padding: 15px 30px; font-size: 16px; font-weight: bold; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
         button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        /* Background Toggle Buttons */
+        .bg-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
+        .bg-btn { flex: 1; padding: 12px; border: 2px solid #e0e0e0; background: white; color: #666; border-radius: 12px; cursor: pointer; transition: all 0.3s; font-weight: 600; font-size: 14px;}
+        .bg-btn.active { border-color: #667eea; background: #f0f4ff; color: #667eea; }
+
         .status { text-align: center; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-weight: 600; min-height: 50px; display: flex; align-items: center; justify-content: center; }
         .status.idle { background: #f0f0f0; color: #666; }
         .status.loading { background: #fff3cd; color: #856404; }
@@ -28,30 +35,8 @@
         .video-wrapper { display: none; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 15px; position: relative; }
         video { width: 100%; display: block; background: black; }
         
-        /* Naya Play Overlay Button */
-        .play-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-        }
-        .play-overlay-btn {
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
-            border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-        }
+        .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
+        .play-overlay-btn { background: rgba(255, 255, 255, 0.9); color: #333; border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s; }
         .play-overlay:hover .play-overlay-btn { transform: scale(1.1); }
 
         .download-btn, .share-btn { display: none; text-align: center; padding: 15px; color: white; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 18px; transition: all 0.3s; margin-top: 10px; width: 100%; border: none; cursor: pointer; }
@@ -64,44 +49,49 @@
 </head>
 <body>
     <div class="container">
-        <h1>AI Yousaf Video Generator</h1>
+        <h1>A1 Y Video Maker</h1>
         <p class="branding">An initiative by <span>A1 Yousaf Studio</span></p>
 
         <div class="input-group">
             <input id="prompt" placeholder="Enter your prompt..." value="Motivational sad story" />
-            <button id="generateBtn" onclick="generate()">Generate Video</button>
         </div>
+
+        <!-- Background Selection -->
+        <div class="bg-toggle">
+            <button id="btn-video" class="bg-btn active" onclick="setBgType('video')">🎬 Real Video (Reels)</button>
+            <button id="btn-image" class="bg-btn" onclick="setBgType('image')">🖼️ AI Images</button>
+        </div>
+
+        <button id="generateBtn" onclick="generate()" style="width: 100%; margin-bottom: 20px;">Generate Video</button>
 
         <div id="status" class="status idle">Ready to create</div>
 
         <div id="videoWrapper" class="video-wrapper">
             <video id="video" controls playsinline preload="auto" webkit-playsinline></video>
-            <!-- Naya Play Overlay -->
             <div id="playOverlay" class="play-overlay" onclick="playWithSound()">
                 <div class="play-overlay-btn">▶️</div>
             </div>
         </div>
 
-        <a id="downloadBtn" href="#" download="ai-yousaf-video.mp4" class="download-btn">
-            ⬇️ Download Video
-        </a>
-
-        <a id="shareBtn" href="#" target="_blank" class="share-btn">
-            📲 Share on WhatsApp
-        </a>
+        <a id="downloadBtn" href="#" download="a1-y-video.mp4" class="download-btn">⬇️ Download Video</a>
+        <a id="shareBtn" href="#" target="_blank" class="share-btn">📲 Share on WhatsApp</a>
     </div>
 
     <script>
         const BACKEND = window.location.origin;
+        let currentBgType = 'video';
+
+        function setBgType(type) {
+            currentBgType = type;
+            document.getElementById('btn-video').classList.remove('active');
+            document.getElementById('btn-image').classList.remove('active');
+            document.getElementById('btn-' + type).classList.add('active');
+        }
 
         function playWithSound() {
             const videoEl = document.getElementById('video');
             const overlay = document.getElementById('playOverlay');
-            
-            // Overlay hatao
             overlay.style.display = 'none';
-            
-            // Awaz on karo aur play karo
             videoEl.muted = false;
             videoEl.volume = 1.0;
             videoEl.play();
@@ -124,7 +114,7 @@
             }
 
             statusEl.className = 'status loading';
-            statusEl.innerHTML = '<span class="spinner"></span> Video ban rahi hai... (30-60 sec)';
+            statusEl.innerHTML = '<span class="spinner"></span> Video ban rahi hai... (1-2 min)';
             videoWrapper.style.display = 'none';
             downloadBtn.style.display = 'none'; 
             shareBtn.style.display = 'none'; 
@@ -135,7 +125,7 @@
                 const res = await fetch(BACKEND + '/generate-video', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt })
+                    body: JSON.stringify({ prompt: prompt, background_type: currentBgType })
                 });
                 const data = await res.json();
 
@@ -146,15 +136,11 @@
                     
                     videoEl.src = url;
                     videoWrapper.style.display = 'block';
-                    
-                    // Play overlay show karo
                     playOverlay.style.display = 'flex';
                     
-                    // Download setup
                     downloadBtn.href = url;
                     downloadBtn.style.display = 'block'; 
                     
-                    // WhatsApp Share setup
                     const message = "Maine yeh AI video A1 Yousaf Studio se banayi hai. Dekhein:\n" + url;
                     shareBtn.href = "https://wa.me/?text=" + encodeURIComponent(message);
                     shareBtn.style.display = 'block';
@@ -165,16 +151,12 @@
                 }
             } catch (e) {
                 statusEl.className = 'status error';
-                statusEl.innerText = '❌ Connection error. Backend chal raha hai?';
+                statusEl.innerText = '❌ Connection error.';
             } finally {
                 btn.disabled = false;
                 btn.innerText = 'Generate Video';
             }
         }
-
-        document.getElementById('prompt').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') generate();
-        });
     </script>
 </body>
 </html>
