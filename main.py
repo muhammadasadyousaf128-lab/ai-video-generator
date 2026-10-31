@@ -42,6 +42,8 @@ app.mount("/static", CORSStaticFiles(directory="static"), name="static")
 class PromptRequest(BaseModel):
     prompt: str
     background_type: str = "video"
+    poetry_type: str = "ai"
+    custom_poetry: str = ""
 
 @app.get("/")
 async def serve_index():
@@ -50,31 +52,16 @@ async def serve_index():
 POETRY_DATABASE = {
     "sad": [
         "Raat ki tanhai mein teri yaad aati hai,\nDil rota hai magar labon par muskaan aati hai,\nKya karun is zindagi ka jo tere bin adhuri hai,\nHar khushi meri tujhse juda hui zaroori hai.",
-        "Muskurana seekh liya hai humne bhi majboori mein,\nAansu chhupa ke rakh diye hain dil ki aandhi mein,\nLog samajhte hain humein koi gham nahi,\nShayad unhe khabar nahi is toote hue dil ki.",
-        "Ek dard sa seene mein utha hai aaj phir,\nKisi purani yaad ne dil ko chhua hai aaj phir,\nAansu jo sookh gaye thay rukhsaaron par mere,\nKisi ne tera naam liya hai aaj phir.",
-        "Tere jaane ke baad yeh dil veeran sa lagta hai,\nHar lamha mujhe ek toofan sa lagta hai,\nLog kehte hain waqt sab bhula deta hai,\nMagar tera chehra toh ab bhi mehmaan sa lagta hai.",
-        "Hum toh unhi ke ho gaye jo humare na hue,\nKhud ko bhula baithe unke sahare na hue,\nWoh door gaye toh kya hua, dil mein base hain,\nUnki yaadon ke siwa kuch bhi toh humare na hue."
+        "Muskurana seekh liya hai humne bhi majboori mein,\nAansu chhupa ke rakh diye hain dil ki aandhi mein,\nLog samajhte hain humein koi gham nahi,\nShayad unhe khabar nahi is toote hue dil ki."
     ],
     "love": [
-        "Tere ishq mein humne sab kuch kho diya,\nTujhe chaha toh apne aap ko hi bhula diya,\nTere muskurane par meri duniya basar hoti hai,\nTere ek lafz par meri saari khushi thehar jati hai.",
-        "Dil ne tumhe hi chaha tha, phir bhi tum door hue,\nYaadein paas rehti hain, hum majboor hue,\nTumhare liye duniya chhodi, tumne hi chhod diya,\nAansu bhi tumhare naam ke, har lamha jod diya.",
-        "Chahat mein teri humein kya kya nahi mila,\nGham bhi mila, dard bhi mila, ashq bhi mila,\nPhir bhi tere naam par yeh jaan qurbaan hai,\nTeri galiyon mein hi meri pehchaan hai.",
-        "Tumhe dekh kar dil ko sukoon milta hai,\nTumse baat karke jahan khilta hai,\nTumhare bina yeh dil udas rehta hai,\nTumse milne ka hi bas intezaar rehta hai.",
-        "Pyaar karna tha toh humne kiya,\nTere naam ko apne dil mein liya,\nTune kya kiya yeh toh na poocho,\nHumne toh tujhe har dua mein liya."
+        "Tere ishq mein humne sab kuch kho diya,\nTujhe chaha toh apne aap ko hi bhula diya,\nTere muskurane par meri duniya basar hoti hai,\nTere ek lafz par meri saari khushi thehar jati hai."
     ],
     "motivational": [
-        "Jab log tumhein thukrayein toh himmat na haarna,\nKhud par bharosa rakhna aur duniya se na darna,\nGirna toh seekhne ka ek hissa hai,\nHar patthar par thes lagne se insaan nahi banta.",
-        "Utho, chalo, sapne dekho, har mushkil se aage niklo,\nRaat ke baad subah aati hai, himmat se kaam lo apna,\nMehnat ka phal meetha hota hai, yeh duniya ka usool hai,\nAndhera chahe kitna bhi ho, ek diya tum khud bano.",
-        "Zindagi mein kabhi rukna nahi,\nTufaano se kabhi darana nahi,\nJo tu khada hai apne hausle ke dam par,\nToh koi bhi manzil tujhse door nahi.",
-        "Haar kar baithna tumhari fitrat nahi,\nMushkil se ghabrana tumhari aadat nahi,\nTum toh woh ho jo toofan se larte hain,\nTumhe rok sakta koi aisi koi taqat nahi.",
-        "Manzil milegi zaroor, bas raasta thoda lamba hai,\nHausla rakhna, in raahon mein bas dhalna hai,\nJo log chalte rehte hain apne irado par,\nUnhe rokna kisi ke bas mein nahi hai."
+        "Jab log tumhein thukrayein toh himmat na haarna,\nKhud par bharosa rakhna aur duniya se na darna,\nGirna toh seekhne ka ek hissa hai,\nHar patthar par thes lagne se insaan nahi banta."
     ],
     "deep": [
-        "Zindagi ek sawaal hai, har jawab khud dhoondhna padta hai,\nJo mila usi mein khush raho, kal ka kisne dekha hai,\nWaqt sabse bara ustaad hai, dard hi asli sabak deta hai,\nKhushiyan pal bhar ki hoti hain, yaadein umar bhar saath rehti hain.",
-        "Kya faida us jeet ka jo dil ko sukoon na de,\nKya faida us safar ka jo manzil tak pahunche hi na,\nLog kehte hain waqt sab bhula deta hai,\nMagar kuch zakhmon ka nishaan hamesha reh jata hai.",
-        "Har kisi ka apna safar hai, apni apni manzil hai,\nAaj ki mehnat kal ka sona hai, yeh samajh lo,\nTum mein hai bohot dum, bas khud par bharosa rakho,\nSirf ek qadam aur uthao, kamyabi qareeb hai ab.",
-        "Zindagi ek kitab hai, har din ek naya panna,\nKuch khali, kuch likhe hue, kuch adhure se,\nHum padhte hain, samajhte hain, phir bhool jate hain,\nAur ek naya din naye panno ke saath aata hai.",
-        "Log kehte hain waqt sab kuch theek kar deta hai,\nMagar waqt toh sirf waqt deta hai,\nTheek hum khud karte hain apne iraado se,\nApne hausle se, apne faislo se."
+        "Zindagi ek sawaal hai, har jawab khud dhoondhna padta hai,\nJo mila usi mein khush raho, kal ka kisne dekha hai,\nWaqt sabse bara ustaad hai, dard hi asli sabak deta hai,\nKhushiyan pal bhar ki hoti hain, yaadein umar bhar saath rehti hain."
     ]
 }
 
@@ -90,15 +77,40 @@ def generate_local_poetry(prompt: str) -> str:
         category = "deep"
     return random.choice(POETRY_DATABASE[category])
 
-def generate_poetry(prompt: str) -> str:
+def process_custom_poetry(text: str) -> str:
+    """Agar user Urdu script mein likhta hai, toh usko Roman Urdu mein convert karo."""
+    # Simple check: agar text mein Arabic/Urdu characters hain
+    if any('\u0600' <= char <= '\u06FF' for char in text):
+        print("🔄 Urdu script detected. Converting to Roman Urdu via Gemini...")
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key: return text
+        
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+        instruction = (
+            f"Convert the following Urdu text into Roman Urdu (English letters). "
+            f"Do not add any extra words, titles, or explanations. Just transliterate the text exactly as it is:\n\n{text}"
+        )
+        payload = {"contents": [{"parts": [{"text": instruction}]}]}
+        try:
+            r = requests.post(url, json=payload, timeout=30)
+            if r.status_code == 200:
+                data = r.json()
+                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        except:
+            pass
+    return text
+
+def generate_poetry(prompt: str, poetry_type: str, custom_poetry: str) -> str:
+    if poetry_type == "custom" and custom_poetry.strip():
+        return process_custom_poetry(custom_poetry.strip())
+        
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key: return generate_local_poetry(prompt)
 
     models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"]
     instruction = (
         f"You are a legendary, deeply emotional Urdu poet. Write a heart-touching, soulful poetry in ROMAN URDU (English letters) "
-        f"about: {prompt}. Exactly 8 lines. Use deep metaphors (like stars, darkness, fire, rain). "
-        f"It should make the listener feel a deep sense of sadness, love, or motivation. "
+        f"about: {prompt}. Exactly 8 lines. Use deep metaphors. "
         f"Do not add any title, explanation, or quotes. Just output the 8 lines separated by newlines."
     )
     payload = {"contents": [{"parts": [{"text": instruction}]}]}
@@ -132,15 +144,13 @@ def get_audio_duration(audio_path: str) -> float:
 
 def get_random_music() -> str:
     music_files = [os.path.join("music", f) for f in os.listdir("music") if f.lower().endswith((".mp3", ".wav"))] if os.path.exists("music") else []
-    # Ensure we don't pick the same song again and again if there are multiple songs
     return random.choice(music_files) if music_files else None
 
-# ---------- FIX: Random Page Fetch for Images ----------
 def fetch_pexels_images(prompt: str, count: int, folder: str) -> list:
     api_key = os.getenv("PEXELS_API_KEY")
     paths = []
     try:
-        random_page = random.randint(1, 5) # Bring new images every time
+        random_page = random.randint(1, 5)
         r = requests.get("https://api.pexels.com/v1/search", headers={"Authorization": api_key},
             params={"query": prompt, "per_page": count, "orientation": "portrait", "page": random_page}, timeout=30)
         if r.status_code == 200:
@@ -154,12 +164,11 @@ def fetch_pexels_images(prompt: str, count: int, folder: str) -> list:
     except Exception as e: print(f"❌ Image Error: {e}")
     return paths
 
-# ---------- FIX: Random Page Fetch for Videos ----------
 def fetch_pexels_videos(prompt: str, count: int, folder: str) -> list:
     api_key = os.getenv("PEXELS_API_KEY")
     paths = []
     try:
-        random_page = random.randint(1, 5) # Bring new videos every time
+        random_page = random.randint(1, 5)
         r = requests.get("https://api.pexels.com/videos/search", headers={"Authorization": api_key},
             params={"query": prompt, "per_page": count, "orientation": "portrait", "page": random_page}, timeout=30)
         if r.status_code == 200:
@@ -175,7 +184,6 @@ def fetch_pexels_videos(prompt: str, count: int, folder: str) -> list:
     except Exception as e: print(f"❌ Video Error: {e}")
     return paths
 
-# ---------- FIX: Text sync exactly with Voice ----------
 def build_poetry_drawtext(poetry_text: str, folder: str, text_duration: float) -> str:
     lines = [l.strip() for l in poetry_text.split("\n") if l.strip()]
     num_lines = len(lines)
@@ -194,15 +202,13 @@ def create_video_from_images(image_paths, output_path, poetry_text, voice_file):
     try:
         folder = os.path.dirname(image_paths[0])
         voice_duration = get_audio_duration(voice_file) if voice_file else 0.0
-        
-        # Video is 20s minimum, but text will only show for voice_duration
         video_duration = max(voice_duration + 2.0, 20.0)
         text_duration = voice_duration if voice_duration > 0 else video_duration
         
         num_images = len(image_paths)
         per_image_duration = video_duration / num_images
-        
         FADE = 0.4
+
         clip_files = []
         for i, img in enumerate(image_paths):
             clip_path = os.path.join(folder, f"clip_{i}.mp4")
@@ -238,8 +244,6 @@ def create_video_from_clips(video_paths, output_path, poetry_text, voice_file):
     try:
         folder = os.path.dirname(video_paths[0])
         voice_duration = get_audio_duration(voice_file) if voice_file else 0.0
-        
-        # Video is 20s minimum, but text will only show for voice_duration
         video_duration = max(voice_duration + 2.0, 20.0)
         text_duration = voice_duration if voice_duration > 0 else video_duration
 
@@ -278,9 +282,9 @@ async def generate_video(request: PromptRequest):
         final_filename = f"output_{ts}.mp4"
         final_path = os.path.join("static", final_filename)
 
-        print(f"\n📝 Prompt: {request.prompt} | Type: {request.background_type}")
+        print(f"\n📝 Prompt: {request.prompt} | Type: {request.background_type} | Poetry: {request.poetry_type}")
 
-        poetry = generate_poetry(request.prompt)
+        poetry = generate_poetry(request.prompt, request.poetry_type, request.custom_poetry)
         voice_file = os.path.join(folder, "voice.mp3")
         voice_success = generate_voice(poetry, voice_file) if poetry else False
 
