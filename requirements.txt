@@ -5,4 +5,5 @@ requests
 opencv-python-headless
 numpy
 gTTS
+uroman
 python-multipart
