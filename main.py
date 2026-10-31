@@ -47,7 +47,6 @@ class PromptRequest(BaseModel):
 async def serve_index():
     return FileResponse("static/index.html")
 
-# ---------- 100+ POETRY DATABASE ----------
 POETRY_DATABASE = {
     "sad": [
         "Raat ki tanhai mein teri yaad aati hai,\nDil rota hai magar labon par muskaan aati hai,\nKya karun is zindagi ka jo tere bin adhuri hai,\nHar khushi meri tujhse juda hui zaroori hai.",
@@ -133,14 +132,17 @@ def get_audio_duration(audio_path: str) -> float:
 
 def get_random_music() -> str:
     music_files = [os.path.join("music", f) for f in os.listdir("music") if f.lower().endswith((".mp3", ".wav"))] if os.path.exists("music") else []
+    # Ensure we don't pick the same song again and again if there are multiple songs
     return random.choice(music_files) if music_files else None
 
+# ---------- FIX: Random Page Fetch for Images ----------
 def fetch_pexels_images(prompt: str, count: int, folder: str) -> list:
     api_key = os.getenv("PEXELS_API_KEY")
     paths = []
     try:
+        random_page = random.randint(1, 5) # Bring new images every time
         r = requests.get("https://api.pexels.com/v1/search", headers={"Authorization": api_key},
-            params={"query": prompt, "per_page": count, "orientation": "portrait"}, timeout=30)
+            params={"query": prompt, "per_page": count, "orientation": "portrait", "page": random_page}, timeout=30)
         if r.status_code == 200:
             photos = r.json().get("photos", [])
             for i, photo in enumerate(photos):
@@ -152,12 +154,14 @@ def fetch_pexels_images(prompt: str, count: int, folder: str) -> list:
     except Exception as e: print(f"❌ Image Error: {e}")
     return paths
 
+# ---------- FIX: Random Page Fetch for Videos ----------
 def fetch_pexels_videos(prompt: str, count: int, folder: str) -> list:
     api_key = os.getenv("PEXELS_API_KEY")
     paths = []
     try:
+        random_page = random.randint(1, 5) # Bring new videos every time
         r = requests.get("https://api.pexels.com/videos/search", headers={"Authorization": api_key},
-            params={"query": prompt, "per_page": count, "orientation": "portrait"}, timeout=30)
+            params={"query": prompt, "per_page": count, "orientation": "portrait", "page": random_page}, timeout=30)
         if r.status_code == 200:
             videos = r.json().get("videos", [])
             for i, video in enumerate(videos):
@@ -171,10 +175,11 @@ def fetch_pexels_videos(prompt: str, count: int, folder: str) -> list:
     except Exception as e: print(f"❌ Video Error: {e}")
     return paths
 
-def build_poetry_drawtext(poetry_text: str, folder: str, video_duration: float) -> str:
+# ---------- FIX: Text sync exactly with Voice ----------
+def build_poetry_drawtext(poetry_text: str, folder: str, text_duration: float) -> str:
     lines = [l.strip() for l in poetry_text.split("\n") if l.strip()]
     num_lines = len(lines)
-    line_duration = video_duration / num_lines
+    line_duration = text_duration / num_lines
     font_file = "C\\:/Windows/Fonts/arialbd.ttf" if os.name == 'nt' else "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
     filters = []
     for i, line in enumerate(lines):
@@ -185,14 +190,15 @@ def build_poetry_drawtext(poetry_text: str, folder: str, video_duration: float) 
         filters.append(f"drawtext=textfile='{line_path}':fontfile='{font_file}':fontcolor=white:fontsize=30:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-150:enable='between(t\\,{start:.2f}\\,{end:.2f})'")
     return ",".join(filters)
 
-# ---------- IMAGE VIDEO WITH PROPER DURATION ----------
 def create_video_from_images(image_paths, output_path, poetry_text, voice_file):
     try:
         folder = os.path.dirname(image_paths[0])
         voice_duration = get_audio_duration(voice_file) if voice_file else 0.0
         
-        # Force Video to be at least 20s
+        # Video is 20s minimum, but text will only show for voice_duration
         video_duration = max(voice_duration + 2.0, 20.0)
+        text_duration = voice_duration if voice_duration > 0 else video_duration
+        
         num_images = len(image_paths)
         per_image_duration = video_duration / num_images
         
@@ -212,7 +218,7 @@ def create_video_from_images(image_paths, output_path, poetry_text, voice_file):
         subprocess.run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", concat_list, "-c", "copy", temp_vid], capture_output=True)
 
         vf = "scale=720:1280,format=yuv420p"
-        if poetry_text: vf = f"scale=720:1280,format=yuv420p,{build_poetry_drawtext(poetry_text, folder, video_duration)}"
+        if poetry_text: vf = f"scale=720:1280,format=yuv420p,{build_poetry_drawtext(poetry_text, folder, text_duration)}"
 
         temp_vid_text = os.path.join(folder, "temp_text.mp4")
         subprocess.run(["ffmpeg", "-y", "-i", temp_vid, "-vf", vf, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-movflags", "+faststart", temp_vid_text], capture_output=True)
@@ -228,20 +234,18 @@ def create_video_from_images(image_paths, output_path, poetry_text, voice_file):
         return True
     except Exception as e: print(f"❌ Error Images: {e}"); return False
 
-# ---------- VIDEO CLIPS WITH LOOPING FOR 20+ SECONDS ----------
 def create_video_from_clips(video_paths, output_path, poetry_text, voice_file):
     try:
         folder = os.path.dirname(video_paths[0])
         voice_duration = get_audio_duration(voice_file) if voice_file else 0.0
         
-        # Force Video to be at least 20s
+        # Video is 20s minimum, but text will only show for voice_duration
         video_duration = max(voice_duration + 2.0, 20.0)
+        text_duration = voice_duration if voice_duration > 0 else video_duration
 
-        # Loop the clips a lot of times to ensure we have enough length. 
-        # FFmpeg -t will cut it precisely at video_duration
         concat_file = os.path.join(folder, "clips.txt")
         with open(concat_file, "w") as f:
-            for _ in range(10): # Loop the whole list 10 times
+            for _ in range(10): 
                 for vid in video_paths:
                     f.write(f"file '{os.path.abspath(vid)}'\n")
 
@@ -249,7 +253,7 @@ def create_video_from_clips(video_paths, output_path, poetry_text, voice_file):
         subprocess.run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", concat_file, "-vf", "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,fps=24", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-t", f"{video_duration:.3f}", "-r", "24", temp_silent], capture_output=True, timeout=120)
 
         vf = "scale=720:1280,format=yuv420p"
-        if poetry_text: vf = f"scale=720:1280,format=yuv420p,{build_poetry_drawtext(poetry_text, folder, video_duration)}"
+        if poetry_text: vf = f"scale=720:1280,format=yuv420p,{build_poetry_drawtext(poetry_text, folder, text_duration)}"
 
         temp_video_text = os.path.join(folder, "temp_text.mp4")
         subprocess.run(["ffmpeg", "-y", "-i", temp_silent, "-vf", vf, "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-movflags", "+faststart", temp_video_text], capture_output=True, timeout=120)
