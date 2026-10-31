@@ -78,9 +78,8 @@ def generate_local_poetry(prompt: str) -> str:
         category = "deep"
     return random.choice(POETRY_DATABASE[category])
 
-# ---------- NEW OFFLINE URDU TO ROMAN CONVERTER ----------
 def process_custom_poetry(text: str) -> str:
-    """Agar user Urdu script mein likhta hai, toh usko uroman library se Roman Urdu mein convert karo."""
+    """Convert Urdu script to Roman Urdu using offline uroman library."""
     if any('\u0600' <= char <= '\u06FF' for char in text):
         print("🔄 Urdu script detected. Converting to Roman Urdu offline...")
         try:
@@ -90,15 +89,12 @@ def process_custom_poetry(text: str) -> str:
             return romanized_text
         except Exception as e:
             print(f"⚠️ Local conversion failed: {e}")
-            return "ERROR_CONVERT"
+            return text
     return text
 
 def generate_poetry(prompt: str, poetry_type: str, custom_poetry: str) -> str:
     if poetry_type == "custom" and custom_poetry.strip():
-        converted = process_custom_poetry(custom_poetry.strip())
-        if converted == "ERROR_CONVERT":
-            return ""
-        return converted
+        return process_custom_poetry(custom_poetry.strip())
         
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key: return generate_local_poetry(prompt)
@@ -123,9 +119,39 @@ def generate_poetry(prompt: str, poetry_type: str, custom_poetry: str) -> str:
         except: pass
     return generate_local_poetry(prompt)
 
+# ---------- NEW: CONVERT TO HINDI SCRIPT FOR PERFECT TTS ----------
+def convert_to_hindi_for_tts(text: str) -> str:
+    """Convert Roman Urdu/Urdu script to Hindi (Devanagari) for perfect TTS pronunciation."""
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key: return text
+    
+    instruction = (
+        f"Transliterate the following Urdu text (which might be written in Roman English or Urdu script) into Hindi (Devanagari) script. "
+        f"Do not translate the meaning. Just convert the pronunciation into Devanagari letters so a Hindi text-to-speech engine can read it perfectly. "
+        f"Output ONLY the converted text.\n\n{text}"
+    )
+    payload = {"contents": [{"parts": [{"text": instruction}]}]}
+    
+    models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
+    for model in models:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            r = requests.post(url, json=payload, timeout=30)
+            if r.status_code == 200:
+                data = r.json()
+                converted = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                return converted
+        except: pass
+        
+    return text # Fallback to Roman if Gemini fails
+
 def generate_voice(poetry_text: str, output_path: str) -> bool:
-    text_for_voice = poetry_text.replace("\n", ". ")
+    # Convert to Hindi script so gTTS doesn't spell out English letters
+    tts_script = convert_to_hindi_for_tts(poetry_text)
+    text_for_voice = tts_script.replace("\n", ". ")
+    
     try:
+        print(f"🎙️ Generating Voice with Hindi Script: {text_for_voice[:50]}...")
         tts = gTTS(text=text_for_voice, lang='hi', slow=False)
         tts.save(output_path)
         return os.path.exists(output_path) and os.path.getsize(output_path) > 1000
@@ -283,7 +309,7 @@ async def generate_video(request: PromptRequest):
         poetry = generate_poetry(request.prompt, request.poetry_type, request.custom_poetry)
         
         if not poetry:
-            return {"status": "error", "message": "Urdu text Roman mein convert nahi ho saka. Please check karein."}
+            return {"status": "error", "message": "Text processing failed. Please check input."}
 
         voice_file = os.path.join(folder, "voice.mp3")
         voice_success = generate_voice(poetry, voice_file) if poetry else False
