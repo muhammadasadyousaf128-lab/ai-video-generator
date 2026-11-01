@@ -102,6 +102,7 @@
             transition: all 0.3s; 
             font-weight: 600; 
             font-size: 14px; 
+            white-space: nowrap;
         }
         
         .toggle-btn.active { 
@@ -250,10 +251,11 @@
         .share-btn { background: linear-gradient(135deg, #25D366, #128C7E); box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); }
         .share-btn:hover { transform: translateY(-2px); }
         
+        /* Mobile Adjustments */
         @media (max-width: 600px) { 
             .container { padding: 25px 20px; } 
             h1 { font-size: 24px; } 
-            .toggle-group { flex-direction: column; } 
+            .toggle-btn { font-size: 12px; padding: 12px 5px; } /* Text fits side-by-side */
             .action-btns { flex-direction: column; } 
         }
     </style>
