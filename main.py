@@ -79,7 +79,6 @@ def generate_local_poetry(prompt: str) -> str:
     return random.choice(POETRY_DATABASE[category])
 
 def convert_to_roman_for_screen(text: str) -> str:
-    """Convert Urdu script to Roman Urdu for Screen."""
     if any('\u0600' <= char <= '\u06FF' for char in text):
         try:
             uroman_instance = ur.Uroman()
@@ -88,13 +87,11 @@ def convert_to_roman_for_screen(text: str) -> str:
     return text
 
 def convert_roman_to_hindi(text: str) -> str:
-    """Convert Roman Urdu to Hindi (Devanagari) for natural TTS."""
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key: return text
     
     instruction = (
-        f"You are a transliteration expert. Convert the following Roman Urdu text into Hindi (Devanagari) script. "
-        f"Do NOT translate. Only transliterate. Example: 'meri zindagi' -> 'मेरी ज़िंदगी'. "
+        f"Convert the following Roman Urdu text into Hindi (Devanagari) script for text-to-speech. "
         f"Output ONLY the Devanagari text.\n\n{text}"
     )
     payload = {"contents": [{"parts": [{"text": instruction}]}]}
@@ -139,20 +136,15 @@ def generate_poetry(prompt: str, poetry_type: str, custom_poetry: str) -> str:
 
 def generate_voice(screen_poetry: str, original_poetry: str, output_path: str) -> bool:
     try:
-        # Check if user typed in Urdu Script
         is_urdu_script = any('\u0600' <= char <= '\u06FF' for char in original_poetry)
         
         if is_urdu_script:
-            print("🎙️ Using native Urdu TTS for perfect pronunciation...")
             text_for_voice = original_poetry.replace("\n", ". ")
             lang = 'ur'
         else:
-            print("🎙️ Converting Roman Urdu to Hindi for perfect TTS...")
             hindi_text = convert_roman_to_hindi(screen_poetry)
             text_for_voice = hindi_text.replace("\n", ". ")
             lang = 'hi'
-            if not any('\u0900' <= c <= '\u097F' for c in hindi_text):
-                print("⚠️ Gemini failed to convert to Hindi. Using Roman text with Hindi TTS (might sound off).")
 
         tts = gTTS(text=text_for_voice, lang=lang, slow=False)
         tts.save(output_path)
@@ -228,7 +220,9 @@ def create_video_from_images(image_paths, output_path, poetry_text, voice_file):
     try:
         folder = os.path.dirname(image_paths[0])
         voice_duration = get_audio_duration(voice_file) if voice_file else 0.0
-        video_duration = max(voice_duration + 2.0, 20.0)
+        
+        # 25 Seconds minimum length
+        video_duration = max(voice_duration + 2.0, 25.0)
         text_duration = voice_duration if voice_duration > 0 else video_duration
         
         num_images = len(image_paths)
@@ -270,12 +264,15 @@ def create_video_from_clips(video_paths, output_path, poetry_text, voice_file):
     try:
         folder = os.path.dirname(video_paths[0])
         voice_duration = get_audio_duration(voice_file) if voice_file else 0.0
-        video_duration = max(voice_duration + 2.0, 20.0)
+        
+        # 25 Seconds minimum length
+        video_duration = max(voice_duration + 2.0, 25.0)
         text_duration = voice_duration if voice_duration > 0 else video_duration
 
+        # Yahan hum 5 videos ko loop kar rahe hain taake 25 second pora ho
         concat_file = os.path.join(folder, "clips.txt")
         with open(concat_file, "w") as f:
-            for _ in range(10): 
+            for _ in range(5): 
                 for vid in video_paths:
                     f.write(f"file '{os.path.abspath(vid)}'\n")
 
@@ -326,8 +323,8 @@ async def generate_video(request: PromptRequest):
             if len(images) < 2: return {"status": "error", "message": "Images nahi mili"}
             success = create_video_from_images(images, final_path, poetry_for_screen, voice_file if voice_success else None)
         else:
-            print("🎬 Video Clips la rahe hain...")
-            videos = fetch_pexels_videos(request.prompt, 3, folder)
+            print("🎬 5 Alag Alag Video Clips la rahe hain...")
+            videos = fetch_pexels_videos(request.prompt, 5, folder) # 5 videos mangwayi
             if len(videos) < 1: return {"status": "error", "message": "Videos nahi mili"}
             success = create_video_from_clips(videos, final_path, poetry_for_screen, voice_file if voice_success else None)
 
