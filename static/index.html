@@ -2,18 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI Yousaf Studio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #0a0514; color: #fff; padding-bottom: 90px; }
+        /* padding-bottom barha diya hai taake bottom nav katay nahi */
+        body { background: #0a0514; color: #fff; padding-bottom: 100px; }
         
         /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
         .header-logo { display: flex; align-items: center; gap: 12px; }
-        /* Logo Image Fix */
+        
+        /* Logo Fix: onerror lagaya hai taake agar image na mile to piche ka icon dikhe */
         .header-logo img { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; background: #1d1233; }
         .header-logo h2 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
         .header-logo p { font-size: 10px; color: #b3a1c9; }
@@ -22,7 +24,7 @@
         .settings-icon { font-size: 22px; color: #b3a1c9; }
 
         /* Banner */
-        .banner { margin: 0 20px; border-radius: 20px; background: url('https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=800') center/cover; padding: 25px 20px; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .banner { margin: 0 20px; border-radius: 20px; background: url('https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=800') center/cover; padding: 25px 20px; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .banner::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(10, 5, 20, 0.9), rgba(10, 5, 20, 0.2)); }
         .banner-content { position: relative; z-index: 1; }
         .banner h1 { font-size: 20px; line-height: 1.3; margin-bottom: 8px; }
@@ -91,13 +93,12 @@
         .download-btn { background: #10b981; }
         .share-btn { background: #25D366; }
 
-        /* Bottom Nav (Fixed at bottom) */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #130a24; border-top: 1px solid #3a285b; display: flex; justify-content: space-around; padding: 15px 0 20px; z-index: 1000; }
+        /* Bottom Nav (Fixed at bottom with z-index) */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #130a24; border-top: 1px solid #3a285b; display: flex; justify-content: space-around; padding: 12px 0 20px; z-index: 1000; }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: #66557a; text-decoration: none; font-size: 10px; font-weight: 500;}
         .nav-item.active { color: #ffd700; }
         .nav-item i { font-size: 22px; }
 
-        /* Keep grid 2 columns on mobile */
         @media (max-width: 600px) { 
             .grid-options { grid-template-columns: 1fr 1fr; } 
             .action-btns { grid-template-columns: 1fr 1fr; } 
@@ -109,6 +110,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-logo">
+            <!-- Logo image -->
             <img src="logo.png" alt="Logo">
             <div>
                 <h2>AI Yousaf Studio</h2>
