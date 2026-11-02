@@ -3,435 +3,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A1 Y Video Maker</title>
+    <title>AI Yousaf Studio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #0f0719; color: #fff; padding-bottom: 80px; }
         
-        /* Deep Dark Premium Background */
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            min-height: 100vh; 
-            background: radial-gradient(circle at top, #1e1b4b, #020617); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 20px; 
-            color: #f8fafc; 
-        }
-        
-        /* Glassmorphism Premium Card */
-        .container { 
-            background: rgba(30, 41, 59, 0.8); 
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(251, 191, 36, 0.2); 
-            border-radius: 24px; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); 
-            padding: 35px 25px; 
-            max-width: 500px; 
-            width: 100%; 
-        }
-        
-        h1 { 
-            text-align: center; 
-            color: #fbbf24; 
-            font-size: 28px; 
-            margin-bottom: 5px; 
-            font-weight: 800; 
-            letter-spacing: 0.5px;
-            text-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);
-        }
-        
-        .branding { 
-            text-align: center; 
-            color: #94a3b8; 
-            font-size: 13px; 
-            margin-bottom: 30px; 
-            font-weight: 500; 
-        }
-        
-        .branding span { 
-            color: #fbbf24; 
-            font-weight: bold; 
-        }
-        
-        /* Input Fields */
-        .input-group { display: flex; gap: 10px; margin-bottom: 25px; }
-        input[type="text"] { 
-            width: 100%; 
-            padding: 16px 20px; 
-            font-size: 15px; 
-            background: #0f172a; 
-            border: 2px solid #334155; 
-            color: #f8fafc; 
-            border-radius: 14px; 
-            outline: none; 
-            transition: all 0.3s; 
-            font-weight: 500;
-        }
-        
-        input[type="text"]:focus { 
-            border-color: #fbbf24; 
-            box-shadow: 0 0 15px rgba(251, 191, 36, 0.2); 
-        }
-        
-        input[type="text"]::placeholder { 
-            color: #64748b; 
-            font-weight: 400;
-        }
-        
-        .label-text { 
-            font-size: 13px; 
-            color: #cbd5e1; 
-            margin-bottom: 10px; 
-            display: block; 
-            font-weight: 600; 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        /* Toggle Buttons */
-        .toggle-group { display: flex; gap: 12px; margin-bottom: 25px; }
-        .toggle-btn { 
-            flex: 1; 
-            padding: 14px; 
-            border: 2px solid #334155; 
-            background: #0f172a; 
-            color: #94a3b8; 
-            border-radius: 14px; 
-            cursor: pointer; 
-            transition: all 0.3s; 
-            font-weight: 600; 
-            font-size: 14px; 
-            white-space: nowrap;
-        }
-        
-        .toggle-btn.active { 
-            border-color: #fbbf24; 
-            background: rgba(251, 191, 36, 0.1); 
-            color: #fbbf24; 
-            box-shadow: 0 0 15px rgba(251, 191, 36, 0.15);
-        }
-        
-        .custom-box { display: none; margin-bottom: 25px; position: relative; }
-        textarea { 
-            width: 100%; 
-            height: 110px; 
-            padding: 16px; 
-            background: #0f172a; 
-            border: 2px solid #334155; 
-            color: #f8fafc; 
-            border-radius: 14px; 
-            font-size: 15px; 
-            resize: none; 
-            outline: none; 
-            font-family: inherit; 
-            transition: all 0.3s;
-        }
-        
-        textarea:focus { border-color: #fbbf24; }
-        textarea::placeholder { color: #64748b; }
-        
-        /* Mic Button */
-        .mic-btn { 
-            position: absolute; 
-            bottom: 15px; 
-            right: 15px; 
-            background: linear-gradient(135deg, #ef4444, #b91c1c); 
-            color: white; 
-            border: none; 
-            border-radius: 50%; 
-            width: 48px; 
-            height: 48px; 
-            font-size: 22px; 
-            cursor: pointer; 
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); 
-            transition: 0.3s; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .mic-btn.recording { 
-            background: linear-gradient(135deg, #10b981, #059669); 
-            animation: pulse 1.5s infinite; 
-        }
-        
-        @keyframes pulse { 
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 
-            70% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } 
-        }
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .header-logo { display: flex; align-items: center; gap: 10px; }
+        .header-logo img { width: 45px; height: 45px; border-radius: 12px; }
+        .header-logo h2 { font-size: 18px; font-weight: 700; }
+        .header-logo p { font-size: 10px; color: #b3a1c9; }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .pro-btn { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 8px 15px; border-radius: 20px; font-weight: 700; font-size: 12px; border: none; }
+        .settings-icon { font-size: 22px; color: #fff; }
 
-        /* Main Generate Button */
-        button.main-btn { 
-            width: 100%; 
-            padding: 18px; 
-            font-size: 18px; 
-            font-weight: 800; 
-            background: linear-gradient(135deg, #fbbf24, #d97706); 
-            color: #0f172a; 
-            border: none; 
-            border-radius: 14px; 
-            cursor: pointer; 
-            transition: all 0.3s; 
-            box-shadow: 0 10px 25px -5px rgba(251, 191, 36, 0.4); 
-            letter-spacing: 1px;
-        }
+        /* Banner */
+        .banner { margin: 0 20px; border-radius: 15px; background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b); padding: 20px; position: relative; overflow: hidden; }
+        .banner h1 { font-size: 20px; line-height: 1.3; }
+        .banner h1 span { color: #ffd700; }
+        .banner p { font-size: 11px; margin-top: 5px; background: rgba(0,0,0,0.4); display: inline-block; padding: 3px 8px; border-radius: 10px; }
+
+        /* Categories */
+        .categories { display: flex; gap: 15px; padding: 20px; overflow-x: auto; scrollbar-width: none; }
+        .cat-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 70px; background: transparent; border: none; color: #fff; }
+        .cat-icon { width: 60px; height: 60px; border-radius: 15px; background: #1d1233; border: 1px solid #3a285b; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #b3a1c9; transition: 0.3s; }
+        .cat-btn.active .cat-icon { border-color: #ffd700; color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.3); background: #2a1c45; }
+        .cat-btn span { font-size: 11px; font-weight: 600; }
+
+        /* Main Card */
+        .main-card { background: #1a0b2e; margin: 0 20px; border-radius: 20px; padding: 20px; border: 1px solid #3a285b; }
+        .section-title { font-size: 14px; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .section-title i { color: #ffd700; }
+
+        /* Inputs */
+        .topic-input { width: 100%; background: #0f0719; border: 1px solid #3a285b; border-radius: 12px; padding: 15px; color: #fff; font-size: 14px; outline: none; margin-bottom: 20px; }
+        .topic-input:focus { border-color: #ffd700; }
         
-        button.main-btn:hover:not(:disabled) { 
-            transform: translateY(-2px); 
-            box-shadow: 0 15px 30px -5px rgba(251, 191, 36, 0.6); 
-        }
+        /* Grid Options */
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .opt-group { display: flex; flex-direction: column; gap: 6px; }
+        .opt-group label { font-size: 11px; color: #b3a1c9; display: flex; align-items: center; gap: 5px; }
+        .opt-group label i { color: #ffd700; }
+        .opt-select { background: #0f0719; border: 1px solid #3a285b; border-radius: 10px; padding: 10px; color: #fff; font-size: 13px; outline: none; appearance: none; }
+
+        /* Main Button */
+        .generate-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none; border-radius: 15px; font-size: 18px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(255, 140, 0, 0.3); margin-bottom: 15px; }
+        .generate-btn:disabled { opacity: 0.6; }
+
+        .features { display: flex; justify-content: space-between; font-size: 10px; color: #b3a1c9; padding: 0 10px; }
+        .features span { display: flex; align-items: center; gap: 3px; }
+        .features i { color: #ffd700; }
+
+        /* Templates */
+        .templates-title { display: flex; justify-content: space-between; align-items: center; padding: 25px 20px 15px; }
+        .templates-title h3 { font-size: 16px; font-weight: 600; }
+        .templates-title a { color: #ffd700; font-size: 12px; text-decoration: none; }
+        .templates-scroll { display: flex; gap: 12px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; }
+        .template-card { min-width: 110px; height: 140px; border-radius: 12px; background: #1d1233; position: relative; overflow: hidden; border: 1px solid #3a285b; display: flex; align-items: flex-end; padding: 10px; }
+        .template-card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; opacity: 0.6; }
+        .template-card p { position: relative; z-index: 1; font-size: 12px; font-weight: 600; line-height: 1.2; }
+
+        /* Status & Video */
+        .status { text-align: center; margin-top: 15px; font-size: 13px; font-weight: 600; display: none; }
+        .status.loading { color: #ffd700; display: block; }
+        .status.success { color: #10b981; display: block; }
+        .status.error { color: #ef4444; display: block; }
         
-        button.main-btn:disabled { 
-            opacity: 0.6; 
-            cursor: not-allowed; 
-            filter: grayscale(50%);
-        }
+        .video-wrapper { display: none; margin-top: 20px; border-radius: 15px; overflow: hidden; border: 1px solid #3a285b; }
+        video { width: 100%; display: block; }
         
-        /* Status Messages */
-        .status { 
-            text-align: center; 
-            padding: 15px; 
-            border-radius: 12px; 
-            margin-top: 20px; 
-            font-weight: 600; 
-            font-size: 14px;
-            display: none; 
-        }
-        
-        .status.loading { display: block; background: rgba(251, 191, 36, 0.1); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-        .status.success { display: block; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .status.error { display: block; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-        
-        .spinner { 
-            display: inline-block; 
-            width: 18px; 
-            height: 18px; 
-            border: 3px solid rgba(251, 191, 36, 0.3); 
-            border-top-color: #fbbf24; 
-            border-radius: 50%; 
-            animation: spin 0.8s linear infinite; 
-            margin-right: 8px; 
-            vertical-align: middle;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        #timer { display: none; text-align: center; font-size: 13px; color: #94a3b8; margin-top: 12px; font-weight: 500;}
-        
-        /* Video Player */
-        .video-wrapper { display: none; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.5); margin-top: 25px; position: relative; border: 1px solid #334155; }
-        video { width: 100%; display: block; background: black; }
-        
-        .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; backdrop-filter: blur(2px); }
-        .play-overlay-btn { background: rgba(251, 191, 36, 0.9); color: #0f172a; border-radius: 50%; width: 75px; height: 75px; display: flex; align-items: center; justify-content: center; font-size: 35px; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); transition: transform 0.2s; padding-left: 5px;}
-        .play-overlay:hover .play-overlay-btn { transform: scale(1.1); }
-        
-        /* Download & Share Buttons */
-        .action-btns { display: flex; gap: 12px; margin-top: 20px; }
-        .download-btn, .share-btn { 
-            display: none; 
-            flex: 1; 
-            text-align: center; 
-            padding: 15px; 
-            color: white; 
-            text-decoration: none; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            font-size: 15px; 
-            transition: all 0.3s; 
-            border: none; 
-            cursor: pointer; 
-        }
-        
-        .download-btn { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3); }
-        .download-btn:hover { transform: translateY(-2px); }
-        
-        .share-btn { background: linear-gradient(135deg, #25D366, #128C7E); box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); }
-        .share-btn:hover { transform: translateY(-2px); }
-        
-        /* Mobile Adjustments */
-        @media (max-width: 600px) { 
-            .container { padding: 25px 20px; } 
-            h1 { font-size: 24px; } 
-            .toggle-btn { font-size: 12px; padding: 12px 5px; } /* Text fits side-by-side */
-            .action-btns { flex-direction: column; } 
-        }
+        .action-btns { display: none; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .action-btn { padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: 600; font-size: 13px; color: white; border: none; cursor: pointer; }
+        .download-btn { background: #10b981; }
+        .share-btn { background: #25D366; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #1a0b2e; border-top: 1px solid #3a285b; display: flex; justify-content: space-around; padding: 12px 0; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #66557a; text-decoration: none; font-size: 10px; }
+        .nav-item.active { color: #ffd700; }
+        .nav-item i { font-size: 20px; }
+
+        @media (max-width: 600px) { .grid-options { grid-template-columns: 1fr; } .action-btns { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>A1 Y Video Maker</h1>
-        <p class="branding">An initiative by <span>A1 Yousaf Studio</span></p>
 
-        <!-- Prompt Box (Empty with clear placeholder) -->
-        <label class="label-text">1. Topic for Poetry</label>
-        <div class="input-group">
-            <input type="text" id="prompt" placeholder="Please write your topic name here... (e.g., Sad love story)" />
+    <!-- Header -->
+    <div class="header">
+        <div class="header-logo">
+            <img src="assets/logo.png" alt="Logo">
+            <div>
+                <h2>AI Yousaf Studio</h2>
+                <p>Turn Thoughts Into Videos ✨</p>
+            </div>
         </div>
-
-        <!-- Poetry Type -->
-        <label class="label-text">2. Poetry Type</label>
-        <div class="toggle-group">
-            <button id="btn-ai-poetry" class="toggle-btn active" onclick="setPoetryType('ai')">🤖 AI Poetry</button>
-            <button id="btn-my-poetry" class="toggle-btn" onclick="setPoetryType('custom')">✍️ Apni Poetry</button>
+        <div class="header-actions">
+            <button class="pro-btn"><i class="fa-solid fa-crown"></i> Pro</button>
+            <i class="fa-solid fa-gear settings-icon"></i>
         </div>
+    </div>
 
-        <div id="customPoetryBox" class="custom-box">
-            <textarea id="customPoetry" placeholder="Yahan apni poetry likhein (Roman Urdu) ya Mic dabakar bolein..."></textarea>
-            <button id="micBtn" class="mic-btn" onclick="startSpeech()">🎤</button>
-        </div>
+    <!-- Banner -->
+    <div class="banner">
+        <h1>Create Beautiful<br><span>Poetry Videos</span><br>with AI Power</h1>
+        <p>Simple • Fast • Free</p>
+    </div>
 
-        <!-- Background Type -->
-        <label class="label-text">3. Video Background</label>
-        <div class="toggle-group">
-            <button id="btn-video" class="toggle-btn active" onclick="setBgType('video')">🎬 Moving Video</button>
-            <button id="btn-image" class="toggle-btn" onclick="setBgType('image')">🖼️ AI Images</button>
-        </div>
+    <!-- Categories -->
+    <div class="categories">
+        <button class="cat-btn active" onclick="setCat('Poetry', this)"><div class="cat-icon"><i class="fa-solid fa-feather"></i></div><span>Poetry</span></button>
+        <button class="cat-btn" onclick="setCat('Story Video', this)"><div class="cat-icon"><i class="fa-solid fa-clapperboard"></i></div><span>Story</span></button>
+        <button class="cat-btn" onclick="setCat('Motivational', this)"><div class="cat-icon"><i class="fa-solid fa-trophy"></i></div><span>Motivational</span></button>
+        <button class="cat-btn" onclick="setCat('Love', this)"><div class="cat-icon"><i class="fa-solid fa-heart"></i></div><span>Love</span></button>
+        <button class="cat-btn" onclick="setCat('Sad Poetry', this)"><div class="cat-icon"><i class="fa-solid fa-heart-crack"></i></div><span>Sad</span></button>
+    </div>
 
-        <button id="generateBtn" class="main-btn" onclick="generate()">Generate Video</button>
+    <!-- Main Form Card -->
+    <div class="main-card">
+        <!-- Topic Input -->
+        <div class="section-title"><i class="fa-solid fa-pen"></i> 1. Enter Your Topic</div>
+        <input type="text" id="prompt" class="topic-input" placeholder="e.g. Life is beautiful, never give up" />
 
-        <div id="status" class="status"></div>
-        <div id="timer"></div>
-
-        <div id="videoWrapper" class="video-wrapper">
-            <video id="video" controls playsinline preload="auto" webkit-playsinline></video>
-            <div id="playOverlay" class="play-overlay" onclick="playWithSound()">
-                <div class="play-overlay-btn">▶</div>
+        <!-- Grid Options -->
+        <div class="grid-options">
+            <div class="opt-group">
+                <label><i class="fa-solid fa-layer-group"></i> 2. Poetry Style</label>
+                <select id="poetryType" class="opt-select">
+                    <option value="ai" selected>AI Auto Generate</option>
+                    <option value="custom">Apni Poetry</option>
+                </select>
+            </div>
+            <div class="opt-group">
+                <label><i class="fa-solid fa-clock"></i> 3. Duration</label>
+                <select id="duration" class="opt-select">
+                    <option value="15">15s</option>
+                    <option value="25" selected>25s</option>
+                    <option value="30">30s</option>
+                </select>
+            </div>
+            <div class="opt-group">
+                <label><i class="fa-solid fa-microphone"></i> 4. Voice</label>
+                <select id="voice" class="opt-select">
+                    <option value="hi" selected>Female (Hindi)</option>
+                    <option value="ur">Male (Urdu)</option>
+                </select>
+            </div>
+            <div class="opt-group">
+                <label><i class="fa-solid fa-image"></i> 5. Background</label>
+                <select id="bgType" class="opt-select">
+                    <option value="video" selected>Moving Videos</option>
+                    <option value="image">AI Images</option>
+                </select>
             </div>
         </div>
 
-        <div class="action-btns">
-            <a id="downloadBtn" href="#" download="a1-y-video.mp4" class="download-btn">⬇️ Download</a>
-            <a id="shareBtn" href="#" target="_blank" class="share-btn">📲 Share</a>
+        <!-- Custom Poetry Text Area (Hidden by default) -->
+        <textarea id="customPoetry" style="display:none; width:100%; height:80px; background:#0f0719; border:1px solid #3a285b; border-radius:12px; padding:15px; color:#fff; margin-bottom:20px;" placeholder="Apni poetry yahan likhein..."></textarea>
+
+        <!-- Generate Button -->
+        <button id="generateBtn" class="generate-btn" onclick="generate()">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate My Video <i class="fa-solid fa-circle-chevron-right"></i>
+        </button>
+
+        <div class="features">
+            <span><i class="fa-solid fa-bolt"></i> Fast</span>
+            <span><i class="fa-solid fa-video"></i> HD Quality</span>
+            <span><i class="fa-solid fa-download"></i> Download</span>
         </div>
+
+        <div id="status" class="status"></div>
+
+        <div id="videoWrapper" class="video-wrapper">
+            <video id="video" controls playsinline></video>
+        </div>
+
+        <div id="actionBtns" class="action-btns">
+            <a id="downloadBtn" href="#" download="video.mp4" class="action-btn download-btn">⬇️ Download</a>
+            <a id="shareBtn" href="#" target="_blank" class="action-btn share-btn">📲 Share</a>
+        </div>
+    </div>
+
+    <!-- Popular Templates -->
+    <div class="templates-title">
+        <h3>⭐ Popular Templates</h3>
+        <a href="#">See All <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="templates-scroll">
+        <div class="template-card" onclick="setTemplate('Sad Urdu Poetry')">
+            <img src="https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Urdu Poetry">
+            <p>Urdu<br>Poetry</p>
+        </div>
+        <div class="template-card" onclick="setTemplate('Love Poetry')">
+            <img src="https://images.pexels.com/photos/931177/pexels-photo-931177.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Love Poetry">
+            <p>Love<br>Poetry</p>
+        </div>
+        <div class="template-card" onclick="setTemplate('Motivational Quotes')">
+            <img src="https://images.pexels.com/photos/1454491/pexels-photo-1454491.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Motivational">
+            <p>Motivational<br>Quotes</p>
+        </div>
+        <div class="template-card" onclick="setTemplate('Sad Poetry')">
+            <img src="https://images.pexels.com/photos/1252869/pexels-photo-1252869.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Sad Poetry">
+            <p>Sad<br>Poetry</p>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-play"></i> My Videos</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-star"></i> Favorites</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-crown"></i> Upgrade</a>
     </div>
 
     <script>
         const BACKEND = window.location.origin;
-        let currentBgType = 'video';
-        let currentPoetryType = 'ai';
-        let recognition;
-        let timerInterval;
-        let secondsElapsed = 0;
 
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'ur-PK'; 
-
-            recognition.onresult = function(event) {
-                let finalTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    }
-                }
-                if (finalTranscript) {
-                    document.getElementById('customPoetry').value += finalTranscript + " ";
-                }
-            };
-
-            recognition.onerror = function(event) {
-                alert("Mic Error: " + event.error);
-                document.getElementById('micBtn').classList.remove('recording');
-                document.getElementById('micBtn').innerText = "🎤";
-            };
-        } else {
-            alert("Aapka browser Voice-to-Text support nahi karta. Please Chrome use karein.");
+        // UI Logic
+        function setCat(category, el) {
+            document.getElementById('prompt').value = category;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
         }
 
-        function startSpeech() {
-            if (!recognition) return;
-            const micBtn = document.getElementById('micBtn');
-            if (micBtn.classList.contains('recording')) {
-                recognition.stop();
-                micBtn.classList.remove('recording');
-                micBtn.innerText = "🎤";
-            } else {
-                recognition.start();
-                micBtn.classList.add('recording');
-                micBtn.innerText = "⏹️";
-            }
+        function setTemplate(topic) {
+            document.getElementById('prompt').value = topic;
+            window.scrollTo({ top: 300, behavior: 'smooth' }); // Scroll to form
         }
 
-        function setPoetryType(type) {
-            currentPoetryType = type;
-            document.getElementById('btn-ai-poetry').classList.remove('active');
-            document.getElementById('btn-my-poetry').classList.remove('active');
-            document.getElementById('btn-' + (type === 'ai' ? 'ai-poetry' : 'my-poetry')).classList.add('active');
-            document.getElementById('customPoetryBox').style.display = type === 'custom' ? 'block' : 'none';
-        }
+        document.getElementById('poetryType').addEventListener('change', function() {
+            document.getElementById('customPoetry').style.display = this.value === 'custom' ? 'block' : 'none';
+        });
 
-        function setBgType(type) {
-            currentBgType = type;
-            document.getElementById('btn-video').classList.remove('active');
-            document.getElementById('btn-image').classList.remove('active');
-            document.getElementById('btn-' + type).classList.add('active');
-        }
-
-        function playWithSound() {
-            const videoEl = document.getElementById('video');
-            const overlay = document.getElementById('playOverlay');
-            overlay.style.display = 'none';
-            videoEl.muted = false;
-            videoEl.volume = 1.0;
-            videoEl.play();
-        }
-
-        function startTimer() {
-            secondsElapsed = 0;
-            const timerEl = document.getElementById('timer');
-            timerEl.style.display = 'block';
-            timerEl.innerText = "⏱️ Time Elapsed: 0s (Est. wait: 30-60s)";
-            
-            timerInterval = setInterval(() => {
-                secondsElapsed++;
-                timerEl.innerText = `⏱️ Time Elapsed: ${secondsElapsed}s (Est. wait: 30-60s)`;
-            }, 1000);
-        }
-
-        function stopTimer() {
-            clearInterval(timerInterval);
-            document.getElementById('timer').style.display = 'none';
-        }
-
+        // Generate Logic
         async function generate() {
             const prompt = document.getElementById('prompt').value;
+            const poetryType = document.getElementById('poetryType').value;
             const customPoetry = document.getElementById('customPoetry').value;
+            const duration = document.getElementById('duration').value;
+            const voice = document.getElementById('voice').value;
+            const bgType = document.getElementById('bgType').value;
+            
             const statusEl = document.getElementById('status');
             const videoEl = document.getElementById('video');
             const videoWrapper = document.getElementById('videoWrapper');
-            const playOverlay = document.getElementById('playOverlay');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const shareBtn = document.getElementById('shareBtn');
+            const actionBtns = document.getElementById('actionBtns');
             const btn = document.getElementById('generateBtn');
 
-            if (!prompt.trim()) {
-                statusEl.className = 'status error';
-                statusEl.innerText = '⚠️ Please write your topic name first!';
-                statusEl.style.display = 'block';
-                return;
-            }
-            if (currentPoetryType === 'custom' && !customPoetry.trim()) {
-                statusEl.className = 'status error';
-                statusEl.innerText = '⚠️ Apni poetry likhein ya Mic dabayein';
-                statusEl.style.display = 'block';
-                return;
+            if (!prompt.trim() && !customPoetry.trim()) {
+                statusEl.className = 'status error'; statusEl.innerText = 'Topic ya Poetry likhna zaroori hai!'; return;
             }
 
             statusEl.className = 'status loading';
-            statusEl.innerHTML = '<span class="spinner"></span> Video ban rahi hai...';
+            statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Video ban rahi hai... (Wait 30-60s)';
             videoWrapper.style.display = 'none';
-            downloadBtn.style.display = 'none'; 
-            shareBtn.style.display = 'none'; 
+            actionBtns.style.display = 'none';
             btn.disabled = true;
-            btn.innerText = 'Please wait...';
-            
-            startTimer();
 
             try {
                 const res = await fetch(BACKEND + '/generate-video', {
@@ -439,9 +268,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         prompt: prompt, 
-                        background_type: currentBgType,
-                        poetry_type: currentPoetryType,
-                        custom_poetry: customPoetry
+                        background_type: bgType,
+                        poetry_type: poetryType,
+                        custom_poetry: customPoetry,
+                        duration: parseInt(duration),
+                        voice_lang: voice
                     })
                 });
                 const data = await res.json();
@@ -449,29 +280,23 @@
                 if (data.status === 'success') {
                     const url = BACKEND + data.video_url;
                     statusEl.className = 'status success';
-                    statusEl.innerText = '✅ Video ready!';
+                    statusEl.innerText = '✅ Video Ready!';
                     
                     videoEl.src = url;
                     videoWrapper.style.display = 'block';
-                    playOverlay.style.display = 'flex';
+                    actionBtns.style.display = 'grid';
                     
-                    downloadBtn.href = url;
-                    downloadBtn.style.display = 'block'; 
-                    
-                    const message = "Maine yeh AI video A1 Yousaf Studio se banayi hai. Dekhein:\n" + url;
-                    shareBtn.href = "https://wa.me/?text=" + encodeURIComponent(message);
-                    shareBtn.style.display = 'block';
+                    document.getElementById('downloadBtn').href = url;
+                    document.getElementById('shareBtn').href = "https://wa.me/?text=" + encodeURIComponent("Meri AI Video dekhein:\n" + url);
                 } else {
                     statusEl.className = 'status error';
                     statusEl.innerText = '❌ Error: ' + data.message;
                 }
             } catch (e) {
                 statusEl.className = 'status error';
-                statusEl.innerText = '❌ Connection error.';
+                statusEl.innerText = '❌ Connection Error';
             } finally {
-                stopTimer();
                 btn.disabled = false;
-                btn.innerText = 'Generate Video';
             }
         }
     </script>
