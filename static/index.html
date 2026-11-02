@@ -8,22 +8,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        /* padding-bottom barha diya hai taake bottom nav katay nahi */
-        body { background: #0a0514; color: #fff; padding-bottom: 100px; }
         
-        /* Header */
+        /* Body ka background dark purple */
+        body { background: #0a0514; color: #fff; padding-bottom: 90px; }
+        
+        /* --- SECTION 1: HEADER --- */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
         .header-logo { display: flex; align-items: center; gap: 12px; }
-        
-        /* Logo Fix: onerror lagaya hai taake agar image na mile to piche ka icon dikhe */
-        .header-logo img { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; background: #1d1233; }
+        .header-logo img { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; }
         .header-logo h2 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
         .header-logo p { font-size: 10px; color: #b3a1c9; }
         .header-actions { display: flex; gap: 12px; align-items: center; }
         .pro-btn { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 12px; border: none; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3); }
         .settings-icon { font-size: 22px; color: #b3a1c9; }
 
-        /* Banner */
+        /* --- SECTION 2: BANNER --- */
         .banner { margin: 0 20px; border-radius: 20px; background: url('https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=800') center/cover; padding: 25px 20px; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .banner::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(10, 5, 20, 0.9), rgba(10, 5, 20, 0.2)); }
         .banner-content { position: relative; z-index: 1; }
@@ -31,7 +30,7 @@
         .banner h1 span { color: #ffd700; }
         .banner p { font-size: 10px; background: rgba(0,0,0,0.6); display: inline-block; padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
 
-        /* Categories */
+        /* --- SECTION 3: CATEGORIES --- */
         .categories { display: flex; gap: 12px; padding: 20px; overflow-x: auto; scrollbar-width: none; }
         .categories::-webkit-scrollbar { display: none; }
         .cat-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 75px; background: transparent; border: none; color: #fff; }
@@ -39,47 +38,32 @@
         .cat-btn.active .cat-icon { border-color: #ffd700; color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.3); background: #2a1c45; }
         .cat-btn span { font-size: 11px; font-weight: 500; }
 
-        /* Main Card */
+        /* --- SECTION 4: MAIN FORM CARD --- */
         .main-card { background: #130a24; margin: 0 20px; border-radius: 24px; padding: 25px 20px; border: 1px solid #3a285b; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
-        
         .section-title { font-size: 14px; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .section-title i { color: #ffd700; }
-
-        /* Inputs */
-        .topic-input { width: 100%; background: #0a0514; border: 1px solid #3a285b; border-radius: 14px; padding: 16px; color: #fff; font-size: 14px; outline: none; margin-bottom: 25px; }
+        
+        .topic-input { width: 100%; background: #0a0514; border: 1px solid #3a285b; border-radius: 14px; padding: 16px; color: #fff; font-size: 13px; outline: none; margin-bottom: 20px; }
         .topic-input:focus { border-color: #ffd700; }
         
-        /* Grid Options (2 Columns) */
-        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .opt-group { display: flex; flex-direction: column; gap: 8px; }
         .opt-group label { font-size: 11px; color: #b3a1c9; display: flex; align-items: center; gap: 5px; font-weight: 500; }
         .opt-group label i { color: #ffd700; font-size: 12px; }
         .opt-select { background: #0a0514; border: 1px solid #3a285b; border-radius: 12px; padding: 12px; color: #fff; font-size: 12px; outline: none; appearance: none; width: 100%; cursor: pointer;}
         .opt-select:focus { border-color: #ffd700; }
 
-        /* Custom Poetry Textarea */
         #customPoetry { display: none; width: 100%; height: 80px; background: #0a0514; border: 1px solid #3a285b; border-radius: 12px; padding: 15px; color: #fff; margin-bottom: 20px; outline: none; font-size: 13px;}
         #customPoetry:focus { border-color: #ffd700; }
 
-        /* Main Button */
-        .generate-btn { width: 100%; padding: 20px; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none; border-radius: 16px; font-size: 18px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(255, 140, 0, 0.4); margin-bottom: 20px; }
+        .generate-btn { width: 100%; padding: 20px; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none; border-radius: 16px; font-size: 18px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(255, 140, 0, 0.4); margin-bottom: 15px; }
         .generate-btn:disabled { opacity: 0.6; }
 
-        .features { display: flex; justify-content: space-between; font-size: 10px; color: #b3a1c9; padding: 0 10px; margin-bottom: 10px; }
+        .features { display: flex; justify-content: space-between; font-size: 10px; color: #b3a1c9; padding: 0 10px; }
         .features span { display: flex; align-items: center; gap: 4px; }
         .features i { color: #ffd700; }
 
-        /* Templates */
-        .templates-title { display: flex; justify-content: space-between; align-items: center; padding: 25px 20px 15px; }
-        .templates-title h3 { font-size: 16px; font-weight: 600; color: #fff; }
-        .templates-title a { color: #ffd700; font-size: 12px; text-decoration: none; font-weight: 600;}
-        .templates-scroll { display: flex; gap: 12px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; }
-        .templates-scroll::-webkit-scrollbar { display: none; }
-        .template-card { min-width: 110px; height: 150px; border-radius: 16px; background: #1d1233; position: relative; overflow: hidden; border: 1px solid #3a285b; display: flex; align-items: flex-end; padding: 12px; cursor: pointer; }
-        .template-card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; opacity: 0.7; }
-        .template-card p { position: relative; z-index: 1; font-size: 13px; font-weight: 700; line-height: 1.2; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
-
-        /* Status & Video */
+        /* --- STATUS & VIDEO --- */
         .status { text-align: center; margin-top: 15px; font-size: 13px; font-weight: 600; display: none; }
         .status.loading { color: #ffd700; display: block; }
         .status.success { color: #10b981; display: block; }
@@ -93,7 +77,17 @@
         .download-btn { background: #10b981; }
         .share-btn { background: #25D366; }
 
-        /* Bottom Nav (Fixed at bottom with z-index) */
+        /* --- SECTION 5: TEMPLATES --- */
+        .templates-title { display: flex; justify-content: space-between; align-items: center; padding: 25px 20px 15px; }
+        .templates-title h3 { font-size: 16px; font-weight: 600; color: #fff; }
+        .templates-title a { color: #ffd700; font-size: 12px; text-decoration: none; font-weight: 600;}
+        .templates-scroll { display: flex; gap: 12px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; }
+        .templates-scroll::-webkit-scrollbar { display: none; }
+        .template-card { min-width: 110px; height: 150px; border-radius: 16px; background: #1d1233; position: relative; overflow: hidden; border: 1px solid #3a285b; display: flex; align-items: flex-end; padding: 12px; cursor: pointer; }
+        .template-card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; opacity: 0.7; }
+        .template-card p { position: relative; z-index: 1; font-size: 13px; font-weight: 700; line-height: 1.2; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
+
+        /* --- SECTION 6: BOTTOM NAV --- */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #130a24; border-top: 1px solid #3a285b; display: flex; justify-content: space-around; padding: 12px 0 20px; z-index: 1000; }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: #66557a; text-decoration: none; font-size: 10px; font-weight: 500;}
         .nav-item.active { color: #ffd700; }
@@ -107,10 +101,9 @@
 </head>
 <body>
 
-    <!-- Header -->
+    <!-- SECTION 1: Header -->
     <div class="header">
         <div class="header-logo">
-            <!-- Logo image -->
             <img src="logo.png" alt="Logo">
             <div>
                 <h2>AI Yousaf Studio</h2>
@@ -123,7 +116,7 @@
         </div>
     </div>
 
-    <!-- Banner -->
+    <!-- SECTION 2: Banner -->
     <div class="banner">
         <div class="banner-content">
             <h1>Create Beautiful<br><span>Poetry Videos</span><br>with AI Power</h1>
@@ -131,34 +124,35 @@
         </div>
     </div>
 
-    <!-- Categories -->
+    <!-- SECTION 3: Categories -->
     <div class="categories">
         <button class="cat-btn active" onclick="setCat('Poetry', this)"><div class="cat-icon"><i class="fa-solid fa-feather"></i></div><span>Poetry</span></button>
         <button class="cat-btn" onclick="setCat('Story Video', this)"><div class="cat-icon"><i class="fa-solid fa-clapperboard"></i></div><span>Story Video</span></button>
         <button class="cat-btn" onclick="setCat('Motivational', this)"><div class="cat-icon"><i class="fa-solid fa-trophy"></i></div><span>Motivational</span></button>
         <button class="cat-btn" onclick="setCat('Love', this)"><div class="cat-icon"><i class="fa-solid fa-heart"></i></div><span>Love</span></button>
         <button class="cat-btn" onclick="setCat('Sad Poetry', this)"><div class="cat-icon"><i class="fa-solid fa-heart-crack"></i></div><span>Sad Poetry</span></button>
+        <button class="cat-btn" onclick="setCat('More', this)"><div class="cat-icon"><i class="fa-solid fa-border-all"></i></div><span>More</span></button>
     </div>
 
-    <!-- Main Form Card -->
+    <!-- SECTION 4: Main Form Card -->
     <div class="main-card">
         <div class="section-title"><i class="fa-solid fa-pen"></i> 1. Enter Your Topic</div>
-        <input type="text" id="prompt" class="topic-input" placeholder="Write your topic here... (e.g. Life is beautiful)" />
+        <input type="text" id="prompt" class="topic-input" placeholder="Write your topic here... (e.g. Life is beautiful, never give up)" />
 
         <div class="grid-options">
             <div class="opt-group">
                 <label><i class="fa-solid fa-layer-group"></i> 2. Poetry Style</label>
                 <select id="poetryType" class="opt-select">
-                    <option value="ai" selected>AI Auto Generate</option>
+                    <option value="ai" selected>Classic Poetry</option>
                     <option value="custom">Apni Poetry</option>
                 </select>
             </div>
             <div class="opt-group">
                 <label><i class="fa-solid fa-clock"></i> 3. Duration</label>
                 <select id="duration" class="opt-select">
-                    <option value="15">15s</option>
-                    <option value="25" selected>25s</option>
-                    <option value="30">30s</option>
+                    <option value="15">15 Seconds</option>
+                    <option value="25" selected>25 Seconds</option>
+                    <option value="30">30 Seconds</option>
                 </select>
             </div>
             <div class="opt-group">
@@ -178,24 +172,21 @@
             <div class="opt-group">
                 <label><i class="fa-solid fa-microphone"></i> 6. Voice</label>
                 <select id="voice" class="opt-select">
-                    <option value="hi" selected>Female (Hindi)</option>
-                    <option value="ur">Male (Urdu)</option>
+                    <option value="hi" selected>Male Voice</option>
+                    <option value="ur">Female Voice</option>
                 </select>
             </div>
             <div class="opt-group">
                 <label><i class="fa-solid fa-music"></i> 7. Music</label>
                 <select id="music" class="opt-select">
-                    <option value="random" selected>Random (Auto)</option>
-                    <option value="peaceful">Peaceful</option>
+                    <option value="peaceful" selected>Peaceful</option>
                     <option value="sad">Sad</option>
                 </select>
             </div>
         </div>
 
-        <!-- Custom Poetry Input -->
         <textarea id="customPoetry" placeholder="Apni poetry yahan likhein..."></textarea>
 
-        <!-- Generate Button -->
         <button id="generateBtn" class="generate-btn" onclick="generate()">
             <i class="fa-solid fa-wand-magic-sparkles"></i> Generate My Video <i class="fa-solid fa-circle-chevron-right"></i>
         </button>
@@ -203,7 +194,7 @@
         <div class="features">
             <span><i class="fa-solid fa-bolt"></i> Fast Generation</span>
             <span><i class="fa-solid fa-video"></i> HD Quality</span>
-            <span><i class="fa-solid fa-download"></i> Download</span>
+            <span><i class="fa-solid fa-download"></i> Download & Share</span>
         </div>
 
         <div id="status" class="status"></div>
@@ -218,7 +209,7 @@
         </div>
     </div>
 
-    <!-- Popular Templates -->
+    <!-- SECTION 5: Popular Templates -->
     <div class="templates-title">
         <h3>⭐ Popular Templates</h3>
         <a href="#">See All <i class="fa-solid fa-arrow-right"></i></a>
@@ -240,9 +231,13 @@
             <img src="https://images.pexels.com/photos/1252869/pexels-photo-1252869.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Sad Poetry">
             <p>Sad<br>Poetry</p>
         </div>
+        <div class="template-card" onclick="setTemplate('Islamic Videos')">
+            <img src="https://images.pexels.com/photos/3587415/pexels-photo-3587415.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Islamic Videos">
+            <p>Islamic<br>Videos</p>
+        </div>
     </div>
 
-    <!-- Bottom Navigation -->
+    <!-- SECTION 6: Bottom Navigation -->
     <div class="bottom-nav">
         <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i> Home</a>
         <a href="#" class="nav-item"><i class="fa-solid fa-play"></i> My Videos</a>
@@ -261,7 +256,7 @@
 
         function setTemplate(topic) {
             document.getElementById('prompt').value = topic;
-            window.scrollTo({ top: 300, behavior: 'smooth' });
+            window.scrollTo({ top: 350, behavior: 'smooth' });
         }
 
         document.getElementById('poetryType').addEventListener('change', function() {
