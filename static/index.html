@@ -5,66 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Yousaf Studio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #0f0719; color: #fff; padding-bottom: 80px; }
+        body { background: #0a0514; color: #fff; padding-bottom: 90px; }
         
         /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
-        .header-logo { display: flex; align-items: center; gap: 10px; }
-        .header-logo img { width: 45px; height: 45px; border-radius: 12px; }
-        .header-logo h2 { font-size: 18px; font-weight: 700; }
+        .header-logo { display: flex; align-items: center; gap: 12px; }
+        /* Logo Image Fix */
+        .header-logo img { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; background: #1d1233; }
+        .header-logo h2 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
         .header-logo p { font-size: 10px; color: #b3a1c9; }
-        .header-actions { display: flex; gap: 10px; align-items: center; }
-        .pro-btn { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 8px 15px; border-radius: 20px; font-weight: 700; font-size: 12px; border: none; }
-        .settings-icon { font-size: 22px; color: #fff; }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .pro-btn { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 12px; border: none; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3); }
+        .settings-icon { font-size: 22px; color: #b3a1c9; }
 
         /* Banner */
-        .banner { margin: 0 20px; border-radius: 15px; background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b); padding: 20px; position: relative; overflow: hidden; }
-        .banner h1 { font-size: 20px; line-height: 1.3; }
+        .banner { margin: 0 20px; border-radius: 20px; background: url('https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=800') center/cover; padding: 25px 20px; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .banner::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(10, 5, 20, 0.9), rgba(10, 5, 20, 0.2)); }
+        .banner-content { position: relative; z-index: 1; }
+        .banner h1 { font-size: 20px; line-height: 1.3; margin-bottom: 8px; }
         .banner h1 span { color: #ffd700; }
-        .banner p { font-size: 11px; margin-top: 5px; background: rgba(0,0,0,0.4); display: inline-block; padding: 3px 8px; border-radius: 10px; }
+        .banner p { font-size: 10px; background: rgba(0,0,0,0.6); display: inline-block; padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
 
         /* Categories */
-        .categories { display: flex; gap: 15px; padding: 20px; overflow-x: auto; scrollbar-width: none; }
-        .cat-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 70px; background: transparent; border: none; color: #fff; }
-        .cat-icon { width: 60px; height: 60px; border-radius: 15px; background: #1d1233; border: 1px solid #3a285b; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #b3a1c9; transition: 0.3s; }
+        .categories { display: flex; gap: 12px; padding: 20px; overflow-x: auto; scrollbar-width: none; }
+        .categories::-webkit-scrollbar { display: none; }
+        .cat-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 75px; background: transparent; border: none; color: #fff; }
+        .cat-icon { width: 65px; height: 65px; border-radius: 18px; background: #1d1233; border: 1px solid #3a285b; display: flex; align-items: center; justify-content: center; font-size: 26px; color: #b3a1c9; transition: 0.3s; }
         .cat-btn.active .cat-icon { border-color: #ffd700; color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.3); background: #2a1c45; }
-        .cat-btn span { font-size: 11px; font-weight: 600; }
+        .cat-btn span { font-size: 11px; font-weight: 500; }
 
         /* Main Card */
-        .main-card { background: #1a0b2e; margin: 0 20px; border-radius: 20px; padding: 20px; border: 1px solid #3a285b; }
+        .main-card { background: #130a24; margin: 0 20px; border-radius: 24px; padding: 25px 20px; border: 1px solid #3a285b; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+        
         .section-title { font-size: 14px; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .section-title i { color: #ffd700; }
 
         /* Inputs */
-        .topic-input { width: 100%; background: #0f0719; border: 1px solid #3a285b; border-radius: 12px; padding: 15px; color: #fff; font-size: 14px; outline: none; margin-bottom: 20px; }
+        .topic-input { width: 100%; background: #0a0514; border: 1px solid #3a285b; border-radius: 14px; padding: 16px; color: #fff; font-size: 14px; outline: none; margin-bottom: 25px; }
         .topic-input:focus { border-color: #ffd700; }
         
-        /* Grid Options */
-        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .opt-group { display: flex; flex-direction: column; gap: 6px; }
-        .opt-group label { font-size: 11px; color: #b3a1c9; display: flex; align-items: center; gap: 5px; }
-        .opt-group label i { color: #ffd700; }
-        .opt-select { background: #0f0719; border: 1px solid #3a285b; border-radius: 10px; padding: 10px; color: #fff; font-size: 13px; outline: none; appearance: none; }
+        /* Grid Options (2 Columns) */
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .opt-group { display: flex; flex-direction: column; gap: 8px; }
+        .opt-group label { font-size: 11px; color: #b3a1c9; display: flex; align-items: center; gap: 5px; font-weight: 500; }
+        .opt-group label i { color: #ffd700; font-size: 12px; }
+        .opt-select { background: #0a0514; border: 1px solid #3a285b; border-radius: 12px; padding: 12px; color: #fff; font-size: 12px; outline: none; appearance: none; width: 100%; cursor: pointer;}
+        .opt-select:focus { border-color: #ffd700; }
+
+        /* Custom Poetry Textarea */
+        #customPoetry { display: none; width: 100%; height: 80px; background: #0a0514; border: 1px solid #3a285b; border-radius: 12px; padding: 15px; color: #fff; margin-bottom: 20px; outline: none; font-size: 13px;}
+        #customPoetry:focus { border-color: #ffd700; }
 
         /* Main Button */
-        .generate-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none; border-radius: 15px; font-size: 18px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(255, 140, 0, 0.3); margin-bottom: 15px; }
+        .generate-btn { width: 100%; padding: 20px; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none; border-radius: 16px; font-size: 18px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(255, 140, 0, 0.4); margin-bottom: 20px; }
         .generate-btn:disabled { opacity: 0.6; }
 
-        .features { display: flex; justify-content: space-between; font-size: 10px; color: #b3a1c9; padding: 0 10px; }
-        .features span { display: flex; align-items: center; gap: 3px; }
+        .features { display: flex; justify-content: space-between; font-size: 10px; color: #b3a1c9; padding: 0 10px; margin-bottom: 10px; }
+        .features span { display: flex; align-items: center; gap: 4px; }
         .features i { color: #ffd700; }
 
         /* Templates */
         .templates-title { display: flex; justify-content: space-between; align-items: center; padding: 25px 20px 15px; }
-        .templates-title h3 { font-size: 16px; font-weight: 600; }
-        .templates-title a { color: #ffd700; font-size: 12px; text-decoration: none; }
+        .templates-title h3 { font-size: 16px; font-weight: 600; color: #fff; }
+        .templates-title a { color: #ffd700; font-size: 12px; text-decoration: none; font-weight: 600;}
         .templates-scroll { display: flex; gap: 12px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; }
-        .template-card { min-width: 110px; height: 140px; border-radius: 12px; background: #1d1233; position: relative; overflow: hidden; border: 1px solid #3a285b; display: flex; align-items: flex-end; padding: 10px; }
-        .template-card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; opacity: 0.6; }
-        .template-card p { position: relative; z-index: 1; font-size: 12px; font-weight: 600; line-height: 1.2; }
+        .templates-scroll::-webkit-scrollbar { display: none; }
+        .template-card { min-width: 110px; height: 150px; border-radius: 16px; background: #1d1233; position: relative; overflow: hidden; border: 1px solid #3a285b; display: flex; align-items: flex-end; padding: 12px; cursor: pointer; }
+        .template-card img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; opacity: 0.7; }
+        .template-card p { position: relative; z-index: 1; font-size: 13px; font-weight: 700; line-height: 1.2; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
 
         /* Status & Video */
         .status { text-align: center; margin-top: 15px; font-size: 13px; font-weight: 600; display: none; }
@@ -75,18 +86,22 @@
         .video-wrapper { display: none; margin-top: 20px; border-radius: 15px; overflow: hidden; border: 1px solid #3a285b; }
         video { width: 100%; display: block; }
         
-        .action-btns { display: none; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .action-btn { padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: 600; font-size: 13px; color: white; border: none; cursor: pointer; }
+        .action-btns { display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .action-btn { padding: 14px; border-radius: 12px; text-align: center; text-decoration: none; font-weight: 700; font-size: 14px; color: white; border: none; cursor: pointer; }
         .download-btn { background: #10b981; }
         .share-btn { background: #25D366; }
 
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #1a0b2e; border-top: 1px solid #3a285b; display: flex; justify-content: space-around; padding: 12px 0; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #66557a; text-decoration: none; font-size: 10px; }
+        /* Bottom Nav (Fixed at bottom) */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #130a24; border-top: 1px solid #3a285b; display: flex; justify-content: space-around; padding: 15px 0 20px; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: #66557a; text-decoration: none; font-size: 10px; font-weight: 500;}
         .nav-item.active { color: #ffd700; }
-        .nav-item i { font-size: 20px; }
+        .nav-item i { font-size: 22px; }
 
-        @media (max-width: 600px) { .grid-options { grid-template-columns: 1fr; } .action-btns { grid-template-columns: 1fr; } }
+        /* Keep grid 2 columns on mobile */
+        @media (max-width: 600px) { 
+            .grid-options { grid-template-columns: 1fr 1fr; } 
+            .action-btns { grid-template-columns: 1fr 1fr; } 
+        }
     </style>
 </head>
 <body>
@@ -94,7 +109,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-logo">
-            <img src="assets/logo.png" alt="Logo">
+            <img src="logo.png" alt="Logo">
             <div>
                 <h2>AI Yousaf Studio</h2>
                 <p>Turn Thoughts Into Videos ✨</p>
@@ -108,26 +123,26 @@
 
     <!-- Banner -->
     <div class="banner">
-        <h1>Create Beautiful<br><span>Poetry Videos</span><br>with AI Power</h1>
-        <p>Simple • Fast • Free</p>
+        <div class="banner-content">
+            <h1>Create Beautiful<br><span>Poetry Videos</span><br>with AI Power</h1>
+            <p>Simple • Fast • Free</p>
+        </div>
     </div>
 
     <!-- Categories -->
     <div class="categories">
         <button class="cat-btn active" onclick="setCat('Poetry', this)"><div class="cat-icon"><i class="fa-solid fa-feather"></i></div><span>Poetry</span></button>
-        <button class="cat-btn" onclick="setCat('Story Video', this)"><div class="cat-icon"><i class="fa-solid fa-clapperboard"></i></div><span>Story</span></button>
+        <button class="cat-btn" onclick="setCat('Story Video', this)"><div class="cat-icon"><i class="fa-solid fa-clapperboard"></i></div><span>Story Video</span></button>
         <button class="cat-btn" onclick="setCat('Motivational', this)"><div class="cat-icon"><i class="fa-solid fa-trophy"></i></div><span>Motivational</span></button>
         <button class="cat-btn" onclick="setCat('Love', this)"><div class="cat-icon"><i class="fa-solid fa-heart"></i></div><span>Love</span></button>
-        <button class="cat-btn" onclick="setCat('Sad Poetry', this)"><div class="cat-icon"><i class="fa-solid fa-heart-crack"></i></div><span>Sad</span></button>
+        <button class="cat-btn" onclick="setCat('Sad Poetry', this)"><div class="cat-icon"><i class="fa-solid fa-heart-crack"></i></div><span>Sad Poetry</span></button>
     </div>
 
     <!-- Main Form Card -->
     <div class="main-card">
-        <!-- Topic Input -->
         <div class="section-title"><i class="fa-solid fa-pen"></i> 1. Enter Your Topic</div>
-        <input type="text" id="prompt" class="topic-input" placeholder="e.g. Life is beautiful, never give up" />
+        <input type="text" id="prompt" class="topic-input" placeholder="Write your topic here... (e.g. Life is beautiful)" />
 
-        <!-- Grid Options -->
         <div class="grid-options">
             <div class="opt-group">
                 <label><i class="fa-solid fa-layer-group"></i> 2. Poetry Style</label>
@@ -145,10 +160,10 @@
                 </select>
             </div>
             <div class="opt-group">
-                <label><i class="fa-solid fa-microphone"></i> 4. Voice</label>
-                <select id="voice" class="opt-select">
-                    <option value="hi" selected>Female (Hindi)</option>
-                    <option value="ur">Male (Urdu)</option>
+                <label><i class="fa-solid fa-globe"></i> 4. Language</label>
+                <select id="language" class="opt-select">
+                    <option value="ur" selected>Urdu</option>
+                    <option value="en">English</option>
                 </select>
             </div>
             <div class="opt-group">
@@ -158,10 +173,25 @@
                     <option value="image">AI Images</option>
                 </select>
             </div>
+            <div class="opt-group">
+                <label><i class="fa-solid fa-microphone"></i> 6. Voice</label>
+                <select id="voice" class="opt-select">
+                    <option value="hi" selected>Female (Hindi)</option>
+                    <option value="ur">Male (Urdu)</option>
+                </select>
+            </div>
+            <div class="opt-group">
+                <label><i class="fa-solid fa-music"></i> 7. Music</label>
+                <select id="music" class="opt-select">
+                    <option value="random" selected>Random (Auto)</option>
+                    <option value="peaceful">Peaceful</option>
+                    <option value="sad">Sad</option>
+                </select>
+            </div>
         </div>
 
-        <!-- Custom Poetry Text Area (Hidden by default) -->
-        <textarea id="customPoetry" style="display:none; width:100%; height:80px; background:#0f0719; border:1px solid #3a285b; border-radius:12px; padding:15px; color:#fff; margin-bottom:20px;" placeholder="Apni poetry yahan likhein..."></textarea>
+        <!-- Custom Poetry Input -->
+        <textarea id="customPoetry" placeholder="Apni poetry yahan likhein..."></textarea>
 
         <!-- Generate Button -->
         <button id="generateBtn" class="generate-btn" onclick="generate()">
@@ -169,7 +199,7 @@
         </button>
 
         <div class="features">
-            <span><i class="fa-solid fa-bolt"></i> Fast</span>
+            <span><i class="fa-solid fa-bolt"></i> Fast Generation</span>
             <span><i class="fa-solid fa-video"></i> HD Quality</span>
             <span><i class="fa-solid fa-download"></i> Download</span>
         </div>
@@ -221,7 +251,6 @@
     <script>
         const BACKEND = window.location.origin;
 
-        // UI Logic
         function setCat(category, el) {
             document.getElementById('prompt').value = category;
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
@@ -230,14 +259,13 @@
 
         function setTemplate(topic) {
             document.getElementById('prompt').value = topic;
-            window.scrollTo({ top: 300, behavior: 'smooth' }); // Scroll to form
+            window.scrollTo({ top: 300, behavior: 'smooth' });
         }
 
         document.getElementById('poetryType').addEventListener('change', function() {
             document.getElementById('customPoetry').style.display = this.value === 'custom' ? 'block' : 'none';
         });
 
-        // Generate Logic
         async function generate() {
             const prompt = document.getElementById('prompt').value;
             const poetryType = document.getElementById('poetryType').value;
