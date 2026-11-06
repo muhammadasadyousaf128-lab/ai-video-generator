@@ -14,18 +14,18 @@
 
 body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(150deg,#10052b,#17052e,#09051b);
+    background: radial-gradient(circle at top, #271052, #10051f 65%, #080416);
     color: white;
     min-height: 100vh;
 }
 
 header {
-    padding: 20px 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     max-width: 1100px;
     margin: auto;
+    padding: 18px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .logo {
@@ -37,6 +37,7 @@ header {
 .logo-icon {
     font-size: 48px;
     color: #ffca28;
+    text-shadow: 0 0 15px #ffb900;
 }
 
 .logo h1 {
@@ -48,15 +49,15 @@ header {
 }
 
 .logo p {
-    color: #ddd;
     font-size: 12px;
+    color: #ddd;
     margin-top: 5px;
 }
 
 .pro {
     border: 1px solid #ffc928;
     color: #ffc928;
-    padding: 12px 17px;
+    padding: 12px 18px;
     border-radius: 30px;
     font-weight: bold;
 }
@@ -67,23 +68,30 @@ header {
     padding: 10px 15px 35px;
 }
 
+/* Banner */
+
 .banner {
-    background: linear-gradient(110deg,#32115e,#651b91,#130a36);
+    min-height: 180px;
+    background:
+        linear-gradient(110deg, #32115e, #651b91, #130a36);
     border: 1px solid #a64cff;
-    border-radius: 20px;
+    border-radius: 22px;
     padding: 30px 20px;
     text-align: center;
     margin-bottom: 18px;
-    box-shadow: 0 0 20px #8c26ff55;
+    box-shadow: 0 0 22px #8c26ff55;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .banner h2 {
-    font-size: 25px;
+    font-size: 27px;
 }
 
 .banner h2 span {
     color: #ffcf24;
-    font-size: 32px;
+    font-size: 36px;
 }
 
 .banner p {
@@ -91,9 +99,11 @@ header {
     color: #eee;
 }
 
+/* Categories */
+
 .categories {
     display: grid;
-    grid-template-columns: repeat(6,1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 8px;
     margin-bottom: 20px;
 }
@@ -102,9 +112,10 @@ header {
     background: #170d31;
     border: 1px solid #574077;
     border-radius: 15px;
-    padding: 15px 5px;
+    padding: 14px 4px;
     text-align: center;
     cursor: pointer;
+    font-size: 13px;
     transition: .2s;
 }
 
@@ -115,17 +126,15 @@ header {
 }
 
 .category.active {
-    background: linear-gradient(140deg,#9b25ff,#4a0c91);
+    background: linear-gradient(140deg, #9b25ff, #4a0c91);
     border: 2px solid #e7baff;
     box-shadow: 0 0 15px #a52cff;
 }
 
-.category:hover {
-    border-color: #ffca28;
-}
+/* Main Form */
 
 .form-card {
-    background: linear-gradient(140deg,#241047,#160a30);
+    background: linear-gradient(140deg, #241047, #160a30);
     border: 1px solid #a43aff;
     border-radius: 25px;
     padding: 23px;
@@ -135,7 +144,6 @@ header {
 .section-title {
     font-size: 19px;
     margin-bottom: 14px;
-    color: white;
 }
 
 input, select, textarea {
@@ -144,8 +152,8 @@ input, select, textarea {
     border: 1px solid #75519d;
     color: white;
     border-radius: 13px;
-    padding: 15px;
-    font-size: 15px;
+    padding: 14px;
+    font-size: 14px;
     outline: none;
 }
 
@@ -153,21 +161,27 @@ input:focus, select:focus, textarea:focus {
     border-color: #ffc928;
 }
 
-textarea {
-    min-height: 110px;
-    resize: vertical;
-}
-
 select option {
     background: #1b0d35;
     color: white;
 }
 
+textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+/* Three columns */
+
 .grid {
     display: grid;
-    grid-template-columns: repeat(3,1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 18px;
     margin-top: 25px;
+}
+
+.field {
+    min-width: 0;
 }
 
 .field label {
@@ -179,7 +193,7 @@ select option {
 
 .field label span {
     color: #ffc928;
-    margin-right: 6px;
+    margin-right: 5px;
 }
 
 .custom-box {
@@ -187,11 +201,13 @@ select option {
     margin-top: 20px;
 }
 
+/* Generate Button */
+
 .generate-btn {
     width: 100%;
     border: none;
     border-radius: 50px;
-    background: linear-gradient(90deg,#ffb900,#ffe44c,#ffb900);
+    background: linear-gradient(90deg, #ffb900, #ffe44c, #ffb900);
     color: #170b26;
     font-size: 21px;
     font-weight: bold;
@@ -216,44 +232,16 @@ select option {
     flex-wrap: wrap;
 }
 
-.templates {
-    margin-top: 32px;
-}
-
-.templates h2 {
-    font-size: 21px;
-    margin-bottom: 15px;
-}
-
-.template-grid {
-    display: grid;
-    grid-template-columns: repeat(5,1fr);
-    gap: 12px;
-}
-
-.template {
-    border: 1px solid #8056a5;
-    border-radius: 15px;
-    padding: 35px 5px;
-    text-align: center;
-    cursor: pointer;
-    font-weight: bold;
-    background: linear-gradient(150deg,#54206d,#150c32);
-    min-height: 110px;
-}
-
-.template:hover {
-    border-color: #ffca28;
-    box-shadow: 0 0 12px #a52cff;
-}
-
 #status {
-    margin-top: 20px;
+    margin-top: 18px;
     text-align: center;
     color: #ffcf32;
-    font-size: 15px;
+    font-size: 14px;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
+
+/* Video Result */
 
 .result {
     display: none;
@@ -285,6 +273,39 @@ video {
     font-weight: bold;
 }
 
+/* Templates */
+
+.templates {
+    margin-top: 32px;
+}
+
+.templates h2 {
+    font-size: 21px;
+    margin-bottom: 15px;
+}
+
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+}
+
+.template {
+    border: 1px solid #8056a5;
+    border-radius: 15px;
+    padding: 30px 5px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+    background: linear-gradient(150deg, #54206d, #150c32);
+    min-height: 110px;
+}
+
+.template:hover {
+    border-color: #ffca28;
+    box-shadow: 0 0 12px #a52cff;
+}
+
 footer {
     text-align: center;
     padding: 25px;
@@ -292,9 +313,24 @@ footer {
     font-size: 13px;
 }
 
+/* Mobile Responsive */
+
 @media(max-width:650px) {
+
+    header {
+        padding: 14px 10px;
+    }
+
+    .logo {
+        gap: 7px;
+    }
+
     .logo h1 {
         font-size: 19px;
+    }
+
+    .logo p {
+        font-size: 10px;
     }
 
     .logo-icon {
@@ -303,23 +339,16 @@ footer {
 
     .pro {
         padding: 9px;
-        font-size: 12px;
+        font-size: 11px;
     }
 
-    .categories {
-        grid-template-columns: repeat(3,1fr);
+    .container {
+        padding: 8px 10px 25px;
     }
 
-    .grid {
-        grid-template-columns: 1fr;
-    }
-
-    .template-grid {
-        grid-template-columns: repeat(2,1fr);
-    }
-
-    .form-card {
-        padding: 16px;
+    .banner {
+        min-height: 150px;
+        padding: 20px 8px;
     }
 
     .banner h2 {
@@ -327,7 +356,66 @@ footer {
     }
 
     .banner h2 span {
+        font-size: 27px;
+    }
+
+    .categories {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+    }
+
+    .category {
+        padding: 12px 3px;
+        font-size: 12px;
+    }
+
+    .category .emoji {
         font-size: 25px;
+    }
+
+    .form-card {
+        padding: 15px 11px;
+    }
+
+    .section-title {
+        font-size: 16px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px 7px;
+        margin-top: 20px;
+    }
+
+    .field label {
+        font-size: 12px;
+        line-height: 1.4;
+        min-height: 34px;
+    }
+
+    .field select {
+        font-size: 11px;
+        padding: 12px 4px;
+        border-radius: 10px;
+    }
+
+    .generate-btn {
+        font-size: 18px;
+        padding: 18px 5px;
+        margin-top: 23px;
+    }
+
+    .features {
+        font-size: 10px;
+        gap: 8px;
+    }
+
+    .template-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .templates h2 {
+        font-size: 19px;
     }
 }
 </style>
@@ -349,35 +437,43 @@ footer {
 <main class="container">
 
     <section class="banner">
-        <h2>Create Beautiful<br>
-        <span>Poetry Videos</span></h2>
-        <p>With AI Power ✨ | Simple • Fast • Creative</p>
+        <h2>
+            Create Beautiful<br>
+            <span>Poetry Videos</span>
+        </h2>
+        <p>With AI Power ✨ | Simple • Fast • Free</p>
     </section>
 
     <section class="categories">
 
         <div class="category active" data-type="poetry">
-            <span class="emoji">🪶</span>Poetry
+            <span class="emoji">🪶</span>
+            Poetry
         </div>
 
         <div class="category" data-type="story">
-            <span class="emoji">🎬</span>Story Video
+            <span class="emoji">🎬</span>
+            Story Video
         </div>
 
         <div class="category" data-type="motivational">
-            <span class="emoji">🏆</span>Motivational
+            <span class="emoji">🏆</span>
+            Motivational
         </div>
 
         <div class="category" data-type="love">
-            <span class="emoji">💕</span>Love
+            <span class="emoji">💕</span>
+            Love
         </div>
 
         <div class="category" data-type="sad">
-            <span class="emoji">💔</span>Sad Poetry
+            <span class="emoji">💔</span>
+            Sad Poetry
         </div>
 
         <div class="category" data-type="deep">
-            <span class="emoji">✨</span>More
+            <span class="emoji">✨</span>
+            More
         </div>
 
     </section>
@@ -389,7 +485,7 @@ footer {
         <input
             type="text"
             id="topic"
-            placeholder="Write your topic here... (e.g. Broken Heart, Love, Life)"
+            placeholder="Write your topic here..."
         >
 
         <div class="grid">
@@ -450,12 +546,17 @@ footer {
 
         <div class="custom-box" id="customBox">
             <h3 class="section-title">📝 Enter Your Own Poetry</h3>
-            <textarea id="customPoetry"
-                placeholder="Yahan apni poetry likhein..."></textarea>
+            <textarea
+                id="customPoetry"
+                placeholder="Yahan apni poetry likhein..."
+            ></textarea>
         </div>
 
-        <button class="generate-btn" id="generateBtn"
-            onclick="generateVideo()">
+        <button
+            class="generate-btn"
+            id="generateBtn"
+            onclick="generateVideo()"
+        >
             ✨ Generate My Video ➜
         </button>
 
@@ -471,15 +572,23 @@ footer {
 
     <section class="result" id="result">
         <h2>🎉 Your Video Is Ready!</h2>
+
         <video id="videoPlayer" controls playsinline></video>
+
         <br>
-        <a id="downloadLink" class="download-btn"
-           href="#" download="AI_Yousaf_Studio.mp4">
+
+        <a
+            id="downloadLink"
+            class="download-btn"
+            href="#"
+            download="AI_Yousaf_Studio.mp4"
+        >
             ⬇️ Download Video
         </a>
     </section>
 
     <section class="templates">
+
         <h2>⭐ Popular Templates</h2>
 
         <div class="template-grid">
@@ -505,6 +614,7 @@ footer {
             </div>
 
         </div>
+
     </section>
 
 </main>
@@ -519,112 +629,210 @@ const API_URL = "/generate-video";
 
 let selectedCategory = "poetry";
 
+/* Categories */
+
 document.querySelectorAll(".category").forEach(item => {
+
     item.addEventListener("click", () => {
 
-        document.querySelectorAll(".category").forEach(c =>
-            c.classList.remove("active")
-        );
+        document.querySelectorAll(".category").forEach(c => {
+            c.classList.remove("active");
+        });
 
         item.classList.add("active");
+
         selectedCategory = item.dataset.type;
 
-        const topic = document.getElementById("topic");
+        const topics = {
+            poetry: "",
+            sad: "Sad and broken heart",
+            love: "Love and Ishq",
+            motivational: "Success and motivation",
+            story: "Emotional life story",
+            deep: "Deep thoughts about life"
+        };
 
-        if(selectedCategory === "sad") topic.value = "Sad and broken heart";
-        if(selectedCategory === "love") topic.value = "Love and Ishq";
-        if(selectedCategory === "motivational") topic.value = "Success and motivation";
-        if(selectedCategory === "story") topic.value = "Emotional life story";
-        if(selectedCategory === "deep") topic.value = "Deep thoughts about life";
+        document.getElementById("topic").value =
+            topics[selectedCategory] || "";
+
     });
+
 });
+
+/* Templates */
 
 document.querySelectorAll(".template").forEach(item => {
+
     item.addEventListener("click", () => {
-        document.getElementById("topic").value = item.dataset.topic;
-        window.scrollTo({top: 0, behavior: "smooth"});
+
+        document.getElementById("topic").value =
+            item.dataset.topic;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
     });
+
 });
 
-document.getElementById("poetryStyle").addEventListener("change", function() {
+/* Custom Poetry */
+
+document.getElementById("poetryStyle")
+.addEventListener("change", function() {
+
     document.getElementById("customBox").style.display =
         this.value === "custom" ? "block" : "none";
+
 });
+
+/* Generate Video */
 
 async function generateVideo() {
 
-    const topic = document.getElementById("topic").value.trim();
-    const poetryType = document.getElementById("poetryStyle").value;
-    const customPoetry = document.getElementById("customPoetry").value.trim();
-    const background = document.getElementById("background").value;
+    const topic =
+        document.getElementById("topic").value.trim();
 
-    const status = document.getElementById("status");
-    const button = document.getElementById("generateBtn");
-    const result = document.getElementById("result");
+    const poetryType =
+        document.getElementById("poetryStyle").value;
 
-    if(!topic) {
-        status.innerText = "⚠️ Please enter your topic first.";
+    const customPoetry =
+        document.getElementById("customPoetry").value.trim();
+
+    const background =
+        document.getElementById("background").value;
+
+    const status =
+        document.getElementById("status");
+
+    const button =
+        document.getElementById("generateBtn");
+
+    const result =
+        document.getElementById("result");
+
+    if (!topic) {
+        status.innerText =
+            "⚠️ Please enter your topic first.";
         return;
     }
 
-    if(poetryType === "custom" && !customPoetry) {
-        status.innerText = "⚠️ Please enter your own poetry.";
+    if (poetryType === "custom" && !customPoetry) {
+        status.innerText =
+            "⚠️ Please enter your own poetry.";
         return;
     }
 
     button.disabled = true;
-    button.innerText = "⏳ Generating Your Video...";
-    status.innerText = "Please wait... Your video is being created.";
+
+    button.innerText =
+        "⏳ Generating Your Video...";
+
+    status.innerText =
+        "Please wait... Your video is being created.";
+
     result.style.display = "none";
 
     try {
 
         const response = await fetch(API_URL, {
+
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json"
             },
+
             body: JSON.stringify({
+
                 prompt: topic,
+
                 background_type: background,
+
                 poetry_type: poetryType,
+
                 custom_poetry: customPoetry
+
             })
+
         });
 
-        const data = await response.json();
+        const responseText = await response.text();
 
-        if(!response.ok || data.status !== "success") {
-            throw new Error(data.message || "Video generation failed.");
+        let data;
+
+        try {
+
+            data = JSON.parse(responseText);
+
+        } catch (e) {
+
+            throw new Error(
+                "Server returned an invalid response. HTTP " +
+                response.status +
+                ". Please check Render Logs."
+            );
+
         }
 
-        const videoUrl = data.video_url +
-            (data.video_url.includes("?") ? "&" : "?") +
-            "t=" + Date.now();
+        if (!response.ok) {
 
-        const player = document.getElementById("videoPlayer");
+            throw new Error(
+                data.message ||
+                "Server Error: " + response.status
+            );
+
+        }
+
+        if (data.status !== "success" || !data.video_url) {
+
+            throw new Error(
+                data.message || "Video generation failed."
+            );
+
+        }
+
+        const videoUrl = new URL(
+            data.video_url,
+            window.location.origin
+        ).href;
+
+        const player =
+            document.getElementById("videoPlayer");
 
         player.src = videoUrl;
+
         player.load();
 
-        document.getElementById("downloadLink").href = videoUrl;
+        document.getElementById("downloadLink").href =
+            videoUrl;
 
         result.style.display = "block";
-        status.innerText = "✅ Video successfully generated!";
 
-        result.scrollIntoView({behavior: "smooth"});
+        status.innerText =
+            "✅ Video successfully generated!";
 
-    } catch(error) {
+        result.scrollIntoView({
+            behavior: "smooth"
+        });
 
-        console.error(error);
-        status.innerText = "❌ Error: " + error.message;
+    } catch (error) {
+
+        console.error("Video Error:", error);
+
+        status.innerText =
+            "❌ Error: " + error.message;
 
     } finally {
 
         button.disabled = false;
-        button.innerText = "✨ Generate My Video ➜";
+
+        button.innerText =
+            "✨ Generate My Video ➜";
 
     }
+
 }
 
 </script>
