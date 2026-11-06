@@ -12,20 +12,42 @@
     padding: 0;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background: radial-gradient(circle at top, #271052, #10051f 65%, #080416);
-    color: white;
-    min-height: 100vh;
+:root {
+    --gold: #ffca28;
+    --purple: #a52cff;
+    --bg: #09051c;
 }
 
-header {
-    max-width: 1100px;
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: radial-gradient(circle at top, #291052, #10051f 65%, #080416);
+    color: white;
+}
+
+.app {
+    width: 100%;
+    max-width: 1250px;
+    height: 100vh;
+    height: 100dvh;
     margin: auto;
-    padding: 18px 15px;
+    padding: 8px 16px;
+    display: grid;
+    grid-template-rows: 65px 112px 78px minmax(0,1fr) 115px 62px;
+    gap: 8px;
+}
+
+/* HEADER */
+
+header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 }
 
 .logo {
@@ -36,148 +58,160 @@ header {
 
 .logo-icon {
     font-size: 48px;
-    color: #ffca28;
-    text-shadow: 0 0 15px #ffb900;
+    color: var(--gold);
+    text-shadow: 0 0 15px orange;
 }
 
 .logo h1 {
-    font-size: 25px;
+    font-size: clamp(17px, 2.5vw, 29px);
 }
 
 .logo h1 span {
-    color: #ffc928;
+    color: var(--gold);
 }
 
 .logo p {
-    font-size: 12px;
     color: #ddd;
+    font-size: 11px;
     margin-top: 5px;
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 .pro {
-    border: 1px solid #ffc928;
-    color: #ffc928;
-    padding: 12px 18px;
+    border: 1px solid var(--gold);
+    color: var(--gold);
     border-radius: 30px;
+    padding: 10px 17px;
     font-weight: bold;
 }
 
-.container {
-    max-width: 1050px;
-    margin: auto;
-    padding: 10px 15px 35px;
+.settings-icon {
+    font-size: 25px;
 }
 
-/* Banner */
+/* BANNER */
 
 .banner {
-    min-height: 180px;
+    border: 1px solid #9f42ff;
+    border-radius: 20px;
     background:
-        linear-gradient(110deg, #32115e, #651b91, #130a36);
-    border: 1px solid #a64cff;
-    border-radius: 22px;
-    padding: 30px 20px;
-    text-align: center;
-    margin-bottom: 18px;
-    box-shadow: 0 0 22px #8c26ff55;
+      linear-gradient(90deg, #32115e, #571b83, #130a36);
+    box-shadow: 0 0 18px #8c26ff55;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-around;
+    text-align: center;
+    padding: 10px;
+}
+
+.banner-art {
+    font-size: clamp(35px, 6vw, 65px);
 }
 
 .banner h2 {
-    font-size: 27px;
+    font-size: clamp(17px, 2.5vw, 27px);
 }
 
 .banner h2 span {
-    color: #ffcf24;
-    font-size: 36px;
+    color: var(--gold);
+    font-size: clamp(23px, 3vw, 35px);
 }
 
 .banner p {
-    margin-top: 10px;
-    color: #eee;
+    font-size: 12px;
+    margin-top: 5px;
 }
 
-/* Categories */
+/* CATEGORIES */
 
 .categories {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(6, minmax(0,1fr));
+    gap: 7px;
 }
 
 .category {
-    background: #170d31;
     border: 1px solid #574077;
-    border-radius: 15px;
-    padding: 14px 4px;
-    text-align: center;
+    border-radius: 14px;
+    background: #170d31;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     cursor: pointer;
-    font-size: 13px;
-    transition: .2s;
+    font-size: clamp(10px, 1.3vw, 15px);
+    text-align: center;
+    min-width: 0;
 }
 
 .category .emoji {
-    display: block;
-    font-size: 27px;
-    margin-bottom: 8px;
+    font-size: clamp(19px, 2.4vw, 28px);
 }
 
 .category.active {
-    background: linear-gradient(140deg, #9b25ff, #4a0c91);
+    background: linear-gradient(140deg,#9b25ff,#4a0c91);
     border: 2px solid #e7baff;
-    box-shadow: 0 0 15px #a52cff;
+    box-shadow: 0 0 14px #a52cff;
 }
 
-/* Main Form */
+/* MAIN FORM */
 
 .form-card {
-    background: linear-gradient(140deg, #241047, #160a30);
+    min-height: 0;
+    background: linear-gradient(140deg,#241047,#160a30);
     border: 1px solid #a43aff;
-    border-radius: 25px;
-    padding: 23px;
-    box-shadow: 0 0 25px #841aff33;
+    border-radius: 23px;
+    padding: 13px 20px;
+    box-shadow: 0 0 22px #841aff33;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
-.section-title {
-    font-size: 19px;
-    margin-bottom: 14px;
+.topic-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 9px;
+    font-size: clamp(14px, 1.8vw, 20px);
+}
+
+.example {
+    color: var(--gold);
+    font-size: 11px;
 }
 
 input, select, textarea {
     width: 100%;
     background: #100921;
-    border: 1px solid #75519d;
     color: white;
-    border-radius: 13px;
-    padding: 14px;
-    font-size: 14px;
+    border: 1px solid #75519d;
+    border-radius: 12px;
     outline: none;
+    padding: 12px 10px;
+    font-size: 13px;
+    min-width: 0;
 }
 
-input:focus, select:focus, textarea:focus {
-    border-color: #ffc928;
+input:focus, select:focus {
+    border-color: var(--gold);
 }
 
 select option {
     background: #1b0d35;
-    color: white;
 }
-
-textarea {
-    min-height: 110px;
-    resize: vertical;
-}
-
-/* Three columns */
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
-    margin-top: 25px;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 13px 22px;
+    margin-top: 18px;
 }
 
 .field {
@@ -186,242 +220,435 @@ textarea {
 
 .field label {
     display: block;
-    font-size: 15px;
     font-weight: bold;
-    margin-bottom: 10px;
+    font-size: clamp(11px,1.5vw,16px);
+    margin-bottom: 9px;
+    white-space: nowrap;
 }
 
 .field label span {
-    color: #ffc928;
-    margin-right: 5px;
+    color: var(--gold);
+    margin-right: 4px;
+}
+
+.field select {
+    padding: 12px 8px;
+    font-size: clamp(10px,1.3vw,14px);
 }
 
 .custom-box {
     display: none;
-    margin-top: 20px;
+    margin-top: 8px;
 }
 
-/* Generate Button */
+.custom-box textarea {
+    min-height: 65px;
+}
+
+/* GENERATE */
 
 .generate-btn {
     width: 100%;
     border: none;
     border-radius: 50px;
-    background: linear-gradient(90deg, #ffb900, #ffe44c, #ffb900);
+    background: linear-gradient(90deg,#ffb900,#ffe44c,#ffb900);
     color: #170b26;
-    font-size: 21px;
+    font-size: clamp(16px,2.2vw,23px);
     font-weight: bold;
-    padding: 20px 10px;
-    margin-top: 28px;
+    padding: 14px 8px;
+    margin-top: 16px;
     cursor: pointer;
-    box-shadow: 0 5px 22px #ffbf0080;
+    box-shadow: 0 4px 20px #ffbf0080;
 }
 
 .generate-btn:disabled {
     opacity: .6;
-    cursor: wait;
 }
 
 .features {
     display: flex;
     justify-content: space-around;
-    gap: 10px;
-    margin-top: 20px;
-    font-size: 13px;
-    color: #eee;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    font-size: clamp(9px,1.2vw,14px);
+    margin-top: 12px;
 }
 
 #status {
-    margin-top: 18px;
     text-align: center;
-    color: #ffcf32;
-    font-size: 14px;
-    white-space: pre-wrap;
+    color: var(--gold);
+    font-size: 12px;
+    margin-top: 5px;
     overflow-wrap: anywhere;
 }
 
-/* Video Result */
-
 .result {
     display: none;
-    margin-top: 25px;
+    position: fixed;
+    z-index: 10;
+    inset: 8%;
     background: #190d30;
-    border: 1px solid #a43aff;
+    border: 2px solid var(--purple);
     border-radius: 20px;
-    padding: 20px;
+    padding: 15px;
     text-align: center;
+    overflow: auto;
 }
 
-video {
+.result video {
     width: 100%;
-    max-width: 400px;
-    max-height: 600px;
+    height: 65%;
+    object-fit: contain;
+    margin-top: 10px;
     background: black;
-    border-radius: 15px;
-    margin-top: 15px;
 }
 
 .download-btn {
     display: inline-block;
-    margin-top: 15px;
-    padding: 14px 25px;
-    border-radius: 30px;
-    background: #ffc928;
+    background: var(--gold);
     color: #160b28;
+    padding: 12px 22px;
+    border-radius: 30px;
     text-decoration: none;
     font-weight: bold;
+    margin-top: 10px;
 }
 
-/* Templates */
+/* TEMPLATES */
 
 .templates {
-    margin-top: 32px;
+    min-height: 0;
 }
 
-.templates h2 {
-    font-size: 21px;
-    margin-bottom: 15px;
+.templates-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: clamp(14px,1.8vw,20px);
+}
+
+.see-all {
+    color: var(--gold);
+    font-size: 12px;
 }
 
 .template-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(5,minmax(0,1fr));
+    gap: 10px;
+    height: calc(100% - 28px);
 }
 
 .template {
     border: 1px solid #8056a5;
-    border-radius: 15px;
-    padding: 30px 5px;
+    border-radius: 13px;
+    background: linear-gradient(150deg,#54206d,#150c32);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     text-align: center;
     cursor: pointer;
     font-weight: bold;
-    background: linear-gradient(150deg, #54206d, #150c32);
-    min-height: 110px;
+    font-size: clamp(10px,1.3vw,15px);
+    gap: 5px;
 }
 
-.template:hover {
-    border-color: #ffca28;
-    box-shadow: 0 0 12px #a52cff;
+.template .emoji {
+    font-size: clamp(23px,3vw,36px);
 }
 
-footer {
-    text-align: center;
-    padding: 25px;
-    color: #aaa;
-    font-size: 13px;
+/* BOTTOM NAVIGATION */
+
+.bottom-nav {
+    border: 1px solid #49306a;
+    border-radius: 20px;
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    background: #100822;
 }
 
-/* Mobile Responsive */
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+    font-size: 12px;
+    color: #ddd;
+    border-right: 1px solid #49306a;
+    cursor: pointer;
+}
+
+.nav-item:last-child {
+    border: none;
+}
+
+.nav-item .emoji {
+    font-size: 23px;
+}
+
+.nav-item.active {
+    color: white;
+    background: #46118b55;
+    text-shadow: 0 0 12px #b64aff;
+}
+
+/* MOBILE SCREEN */
 
 @media(max-width:650px) {
 
-    header {
-        padding: 14px 10px;
+    .app {
+        padding: 5px 8px;
+        gap: 5px;
+        grid-template-rows:
+            48px
+            75px
+            61px
+            minmax(0,1fr)
+            91px
+            49px;
     }
 
     .logo {
-        gap: 7px;
-    }
-
-    .logo h1 {
-        font-size: 19px;
-    }
-
-    .logo p {
-        font-size: 10px;
+        gap: 6px;
     }
 
     .logo-icon {
-        font-size: 35px;
+        font-size: 32px;
     }
 
-    .pro {
-        padding: 9px;
-        font-size: 11px;
+    .logo h1 {
+        font-size: 17px;
     }
 
-    .container {
-        padding: 8px 10px 25px;
+    .logo p {
+        font-size: 9px;
+        margin-top: 2px;
     }
 
-    .banner {
-        min-height: 150px;
-        padding: 20px 8px;
-    }
-
-    .banner h2 {
-        font-size: 21px;
-    }
-
-    .banner h2 span {
-        font-size: 27px;
-    }
-
-    .categories {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 7px;
-    }
-
-    .category {
-        padding: 12px 3px;
-        font-size: 12px;
-    }
-
-    .category .emoji {
-        font-size: 25px;
-    }
-
-    .form-card {
-        padding: 15px 11px;
-    }
-
-    .section-title {
-        font-size: 16px;
-    }
-
-    .grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px 7px;
-        margin-top: 20px;
-    }
-
-    .field label {
-        font-size: 12px;
-        line-height: 1.4;
-        min-height: 34px;
-    }
-
-    .field select {
-        font-size: 11px;
-        padding: 12px 4px;
-        border-radius: 10px;
-    }
-
-    .generate-btn {
-        font-size: 18px;
-        padding: 18px 5px;
-        margin-top: 23px;
-    }
-
-    .features {
-        font-size: 10px;
+    .header-right {
         gap: 8px;
     }
 
-    .template-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .pro {
+        padding: 7px 10px;
+        font-size: 10px;
     }
 
-    .templates h2 {
+    .settings-icon {
+        font-size: 20px;
+    }
+
+    .banner {
+        border-radius: 13px;
+        padding: 5px;
+    }
+
+    .banner-art {
+        font-size: 34px;
+    }
+
+    .banner h2 {
+        font-size: 15px;
+    }
+
+    .banner h2 span {
+        font-size: 22px;
+    }
+
+    .banner p {
+        font-size: 9px;
+    }
+
+    .categories {
+        gap: 4px;
+    }
+
+    .category {
+        border-radius: 10px;
+        font-size: 10px;
+        gap: 2px;
+    }
+
+    .category .emoji {
+        font-size: 21px;
+    }
+
+    .form-card {
+        padding: 9px 9px;
+        border-radius: 17px;
+    }
+
+    .topic-heading {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .example {
+        font-size: 8px;
+    }
+
+    input {
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    .grid {
+        gap: 9px 6px;
+        margin-top: 12px;
+    }
+
+    .field label {
+        font-size: 10px;
+        margin-bottom: 5px;
+        min-height: 25px;
+    }
+
+    .field select {
+        padding: 10px 3px;
+        font-size: 10px;
+        border-radius: 9px;
+    }
+
+    .generate-btn {
+        font-size: 16px;
+        padding: 13px 5px;
+        margin-top: 11px;
+    }
+
+    .features {
+        font-size: 9px;
+        margin-top: 8px;
+    }
+
+    #status {
+        font-size: 10px;
+    }
+
+    .templates-heading {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .see-all {
+        font-size: 10px;
+    }
+
+    .template-grid {
+        gap: 5px;
+        height: calc(100% - 21px);
+    }
+
+    .template {
+        font-size: 10px;
+        border-radius: 9px;
+        gap: 3px;
+    }
+
+    .template .emoji {
+        font-size: 25px;
+    }
+
+    .bottom-nav {
+        border-radius: 13px;
+    }
+
+    .nav-item {
+        font-size: 10px;
+        gap: 0;
+    }
+
+    .nav-item .emoji {
         font-size: 19px;
+    }
+}
+
+/* SMALL PHONES */
+
+@media(max-width:380px) {
+    .app {
+        padding: 4px 5px;
+        gap: 4px;
+        grid-template-rows: 43px 67px 55px minmax(0,1fr) 82px 45px;
+    }
+
+    .logo h1 {
+        font-size: 15px;
+    }
+
+    .logo p {
+        font-size: 8px;
+    }
+
+    .logo-icon {
+        font-size: 27px;
+    }
+
+    .banner h2 {
+        font-size: 13px;
+    }
+
+    .banner h2 span {
+        font-size: 19px;
+    }
+
+    .category {
+        font-size: 9px;
+    }
+
+    .category .emoji {
+        font-size: 18px;
+    }
+
+    .form-card {
+        padding: 7px;
+    }
+
+    .grid {
+        gap: 7px 4px;
+    }
+
+    .field label {
+        font-size: 9px;
+    }
+
+    .field select {
+        font-size: 9px;
+        padding: 9px 2px;
+    }
+
+    .generate-btn {
+        font-size: 14px;
+    }
+
+    .features {
+        font-size: 8px;
+    }
+}
+
+/* LANDSCAPE FALLBACK */
+
+@media(max-height:500px) {
+    html, body {
+        overflow-y: auto;
+    }
+
+    .app {
+        height: auto;
+        min-height: 100vh;
+        grid-template-rows: 55px 90px 65px 330px 95px 55px;
     }
 }
 </style>
 </head>
 
 <body>
+
+<div class="app">
+
+<!-- HEADER -->
 
 <header>
     <div class="logo">
@@ -431,132 +658,137 @@ footer {
             <p>Turn Your Thoughts Into Stunning Videos ✨</p>
         </div>
     </div>
-    <div class="pro">👑 Pro</div>
+
+    <div class="header-right">
+        <div class="pro">👑 Pro</div>
+        <div class="settings-icon">⚙️</div>
+    </div>
 </header>
 
-<main class="container">
+<!-- BANNER -->
 
-    <section class="banner">
-        <h2>
-            Create Beautiful<br>
-            <span>Poetry Videos</span>
-        </h2>
-        <p>With AI Power ✨ | Simple • Fast • Free</p>
-    </section>
+<section class="banner">
+    <div class="banner-art">🌳🌙</div>
+    <div>
+        <h2>Create Beautiful<br>
+        <span>Poetry Videos</span></h2>
+        <p>With AI Power ✨</p>
+    </div>
+    <div class="banner-art">🌌</div>
+</section>
 
-    <section class="categories">
+<!-- CATEGORIES -->
 
-        <div class="category active" data-type="poetry">
-            <span class="emoji">🪶</span>
-            Poetry
+<section class="categories">
+
+    <div class="category active" data-type="poetry">
+        <span class="emoji">🪶</span>Poetry
+    </div>
+
+    <div class="category" data-type="story">
+        <span class="emoji">🎬</span>Story Video
+    </div>
+
+    <div class="category" data-type="motivational">
+        <span class="emoji">🏆</span>Motivational
+    </div>
+
+    <div class="category" data-type="love">
+        <span class="emoji">💕</span>Love
+    </div>
+
+    <div class="category" data-type="sad">
+        <span class="emoji">💔</span>Sad Poetry
+    </div>
+
+    <div class="category" data-type="deep">
+        <span class="emoji">🟪</span>More
+    </div>
+
+</section>
+
+<!-- MAIN FORM -->
+
+<section class="form-card">
+
+    <div>
+        <div class="topic-heading">
+            <strong>✏️ 1. Enter Your Topic</strong>
+            <span class="example">💡 Example: Life is beautiful</span>
         </div>
-
-        <div class="category" data-type="story">
-            <span class="emoji">🎬</span>
-            Story Video
-        </div>
-
-        <div class="category" data-type="motivational">
-            <span class="emoji">🏆</span>
-            Motivational
-        </div>
-
-        <div class="category" data-type="love">
-            <span class="emoji">💕</span>
-            Love
-        </div>
-
-        <div class="category" data-type="sad">
-            <span class="emoji">💔</span>
-            Sad Poetry
-        </div>
-
-        <div class="category" data-type="deep">
-            <span class="emoji">✨</span>
-            More
-        </div>
-
-    </section>
-
-    <section class="form-card">
-
-        <h2 class="section-title">✏️ 1. Enter Your Topic</h2>
 
         <input
-            type="text"
             id="topic"
+            type="text"
             placeholder="Write your topic here..."
         >
+    </div>
 
-        <div class="grid">
+    <div class="grid">
 
-            <div class="field">
-                <label><span>📚</span>2. Poetry Style</label>
-                <select id="poetryStyle">
-                    <option value="ai">AI Generated Poetry</option>
-                    <option value="custom">My Own Poetry</option>
-                </select>
-            </div>
-
-            <div class="field">
-                <label><span>⏱️</span>3. Duration</label>
-                <select id="duration">
-                    <option value="25">25 Seconds</option>
-                    <option value="30">30 Seconds</option>
-                    <option value="45">45 Seconds</option>
-                    <option value="60">60 Seconds</option>
-                </select>
-            </div>
-
-            <div class="field">
-                <label><span>🌐</span>4. Language</label>
-                <select id="language">
-                    <option value="roman">Roman Urdu</option>
-                    <option value="urdu">Urdu</option>
-                    <option value="english">English</option>
-                </select>
-            </div>
-
-            <div class="field">
-                <label><span>🖼️</span>5. Background</label>
-                <select id="background">
-                    <option value="video">🎬 Video Background</option>
-                    <option value="image">🌄 Image Background</option>
-                </select>
-            </div>
-
-            <div class="field">
-                <label><span>🎙️</span>6. Voice</label>
-                <select id="voice">
-                    <option value="male">Male Voice</option>
-                </select>
-            </div>
-
-            <div class="field">
-                <label><span>🎵</span>7. Music</label>
-                <select id="music">
-                    <option value="peaceful">Peaceful</option>
-                    <option value="sad">Sad Music</option>
-                    <option value="romantic">Romantic</option>
-                    <option value="none">No Music</option>
-                </select>
-            </div>
-
+        <div class="field">
+            <label><span>📚</span>2. Poetry Style</label>
+            <select id="poetryStyle">
+                <option value="ai">AI Generated</option>
+                <option value="custom">My Own Poetry</option>
+            </select>
         </div>
 
-        <div class="custom-box" id="customBox">
-            <h3 class="section-title">📝 Enter Your Own Poetry</h3>
-            <textarea
-                id="customPoetry"
-                placeholder="Yahan apni poetry likhein..."
-            ></textarea>
+        <div class="field">
+            <label><span>⏱️</span>3. Duration</label>
+            <select id="duration">
+                <option value="25">25 Seconds</option>
+                <option value="30">30 Seconds</option>
+                <option value="45">45 Seconds</option>
+                <option value="60">60 Seconds</option>
+            </select>
         </div>
 
-        <button
-            class="generate-btn"
-            id="generateBtn"
-            onclick="generateVideo()"
-        >
+        <div class="field">
+            <label><span>🌐</span>4. Language</label>
+            <select id="language">
+                <option value="roman">Roman Urdu</option>
+                <option value="urdu">Urdu</option>
+                <option value="english">English</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label><span>🖼️</span>5. Background</label>
+            <select id="background">
+                <option value="video">Video Background</option>
+                <option value="image">Image Background</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label><span>🎙️</span>6. Voice</label>
+            <select id="voice">
+                <option value="male">Male Voice</option>
+                <option value="female">Female Voice</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label><span>🎵</span>7. Music</label>
+            <select id="music">
+                <option value="peaceful">Peaceful</option>
+                <option value="sad">Sad Music</option>
+                <option value="romantic">Romantic</option>
+                <option value="none">No Music</option>
+            </select>
+        </div>
+
+    </div>
+
+    <div class="custom-box" id="customBox">
+        <textarea id="customPoetry"
+        placeholder="Enter your own poetry..."></textarea>
+    </div>
+
+    <div>
+        <button class="generate-btn" id="generateBtn"
+        onclick="generateVideo()">
             ✨ Generate My Video ➜
         </button>
 
@@ -567,81 +799,107 @@ footer {
             <span>🎞️ HD Quality</span>
             <span>⬇️ Download & Share</span>
         </div>
+    </div>
 
-    </section>
+</section>
 
-    <section class="result" id="result">
-        <h2>🎉 Your Video Is Ready!</h2>
+<!-- VIDEO RESULT -->
 
-        <video id="videoPlayer" controls playsinline></video>
+<section class="result" id="result">
+    <h2>🎉 Your Video Is Ready!</h2>
+    <video id="videoPlayer" controls playsinline></video>
+    <br>
+    <a id="downloadLink" class="download-btn"
+    href="#" download="AI_Yousaf_Studio.mp4">
+        ⬇️ Download Video
+    </a>
+    <br><br>
+    <button onclick="closeResult()">Close</button>
+</section>
 
-        <br>
+<!-- TEMPLATES -->
 
-        <a
-            id="downloadLink"
-            class="download-btn"
-            href="#"
-            download="AI_Yousaf_Studio.mp4"
-        >
-            ⬇️ Download Video
-        </a>
-    </section>
+<section class="templates">
 
-    <section class="templates">
+    <div class="templates-heading">
+        <strong>⭐ Popular Templates</strong>
+        <span class="see-all">See All ➜</span>
+    </div>
 
-        <h2>⭐ Popular Templates</h2>
+    <div class="template-grid">
 
-        <div class="template-grid">
-
-            <div class="template" data-topic="Urdu poetry">
-                🌅<br>Urdu Poetry
-            </div>
-
-            <div class="template" data-topic="Love and romance">
-                🌹<br>Love Poetry
-            </div>
-
-            <div class="template" data-topic="Motivation and success">
-                🏆<br>Motivational Quotes
-            </div>
-
-            <div class="template" data-topic="Sad and lonely life">
-                🌧️<br>Sad Poetry
-            </div>
-
-            <div class="template" data-topic="Islamic reminders">
-                🕌<br>Islamic Videos
-            </div>
-
+        <div class="template" data-topic="Urdu poetry">
+            <span class="emoji">🌅</span>
+            Urdu Poetry
         </div>
 
-    </section>
+        <div class="template" data-topic="Love and romance">
+            <span class="emoji">🌹</span>
+            Love Poetry
+        </div>
 
-</main>
+        <div class="template" data-topic="Motivation and success">
+            <span class="emoji">🏆</span>
+            Motivational
+        </div>
 
-<footer>
-    © 2026 AI Yousaf Studio | Create With Creativity ✨
-</footer>
+        <div class="template" data-topic="Sad and lonely life">
+            <span class="emoji">🌧️</span>
+            Sad Poetry
+        </div>
+
+        <div class="template" data-topic="Islamic reminders">
+            <span class="emoji">🕌</span>
+            Islamic Videos
+        </div>
+
+    </div>
+
+</section>
+
+<!-- BOTTOM NAVIGATION -->
+
+<nav class="bottom-nav">
+
+    <div class="nav-item active">
+        <span class="emoji">🏠</span>
+        Home
+    </div>
+
+    <div class="nav-item" onclick="showMyVideos()">
+        <span class="emoji">▶️</span>
+        My Videos
+    </div>
+
+    <div class="nav-item">
+        <span class="emoji">⭐</span>
+        Favorites
+    </div>
+
+    <div class="nav-item">
+        <span class="emoji">👑</span>
+        Upgrade
+    </div>
+
+</nav>
+
+</div>
 
 <script>
 
 const API_URL = "/generate-video";
 
-let selectedCategory = "poetry";
-
-/* Categories */
+/* CATEGORY SELECTION */
 
 document.querySelectorAll(".category").forEach(item => {
 
     item.addEventListener("click", () => {
 
-        document.querySelectorAll(".category").forEach(c => {
-            c.classList.remove("active");
-        });
+        document.querySelectorAll(".category").forEach(c =>
+            c.classList.remove("active")
+        );
 
         item.classList.add("active");
-
-        selectedCategory = item.dataset.type;
 
         const topics = {
             poetry: "",
@@ -653,13 +911,13 @@ document.querySelectorAll(".category").forEach(item => {
         };
 
         document.getElementById("topic").value =
-            topics[selectedCategory] || "";
+            topics[item.dataset.type];
 
     });
 
 });
 
-/* Templates */
+/* TEMPLATE SELECTION */
 
 document.querySelectorAll(".template").forEach(item => {
 
@@ -668,16 +926,11 @@ document.querySelectorAll(".template").forEach(item => {
         document.getElementById("topic").value =
             item.dataset.topic;
 
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
-
     });
 
 });
 
-/* Custom Poetry */
+/* CUSTOM POETRY */
 
 document.getElementById("poetryStyle")
 .addEventListener("change", function() {
@@ -687,12 +940,11 @@ document.getElementById("poetryStyle")
 
 });
 
-/* Generate Video */
+/* GENERATE VIDEO */
 
 async function generateVideo() {
 
-    const topic =
-        document.getElementById("topic").value.trim();
+    const topic = document.getElementById("topic").value.trim();
 
     const poetryType =
         document.getElementById("poetryStyle").value;
@@ -703,59 +955,38 @@ async function generateVideo() {
     const background =
         document.getElementById("background").value;
 
-    const status =
-        document.getElementById("status");
-
-    const button =
-        document.getElementById("generateBtn");
-
-    const result =
-        document.getElementById("result");
+    const status = document.getElementById("status");
+    const button = document.getElementById("generateBtn");
+    const result = document.getElementById("result");
 
     if (!topic) {
-        status.innerText =
-            "⚠️ Please enter your topic first.";
+        status.innerText = "⚠️ Please enter your topic first.";
         return;
     }
 
     if (poetryType === "custom" && !customPoetry) {
-        status.innerText =
-            "⚠️ Please enter your own poetry.";
+        status.innerText = "⚠️ Please enter your own poetry.";
         return;
     }
 
     button.disabled = true;
-
-    button.innerText =
-        "⏳ Generating Your Video...";
-
-    status.innerText =
-        "Please wait... Your video is being created.";
-
+    button.innerText = "⏳ Generating Your Video...";
+    status.innerText = "Please wait... Creating your video...";
     result.style.display = "none";
 
     try {
 
         const response = await fetch(API_URL, {
-
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
-
                 prompt: topic,
-
                 background_type: background,
-
                 poetry_type: poetryType,
-
                 custom_poetry: customPoetry
-
             })
-
         });
 
         const responseText = await response.text();
@@ -763,34 +994,22 @@ async function generateVideo() {
         let data;
 
         try {
-
             data = JSON.parse(responseText);
-
-        } catch (e) {
-
+        } catch {
             throw new Error(
-                "Server returned an invalid response. HTTP " +
-                response.status +
-                ". Please check Render Logs."
+                "Invalid server response. HTTP " + response.status +
+                ". Check Render Logs."
             );
-
         }
 
         if (!response.ok) {
-
             throw new Error(
-                data.message ||
-                "Server Error: " + response.status
+                data.message || "Server Error: " + response.status
             );
-
         }
 
         if (data.status !== "success" || !data.video_url) {
-
-            throw new Error(
-                data.message || "Video generation failed."
-            );
-
+            throw new Error(data.message || "Video generation failed.");
         }
 
         const videoUrl = new URL(
@@ -798,41 +1017,47 @@ async function generateVideo() {
             window.location.origin
         ).href;
 
-        const player =
-            document.getElementById("videoPlayer");
+        const player = document.getElementById("videoPlayer");
 
         player.src = videoUrl;
-
         player.load();
 
-        document.getElementById("downloadLink").href =
-            videoUrl;
+        document.getElementById("downloadLink").href = videoUrl;
 
         result.style.display = "block";
 
-        status.innerText =
-            "✅ Video successfully generated!";
+        status.innerText = "✅ Video successfully generated!";
 
-        result.scrollIntoView({
-            behavior: "smooth"
-        });
+    } catch(error) {
 
-    } catch (error) {
+        console.error(error);
 
-        console.error("Video Error:", error);
-
-        status.innerText =
-            "❌ Error: " + error.message;
+        status.innerText = "❌ Error: " + error.message;
 
     } finally {
 
         button.disabled = false;
-
-        button.innerText =
-            "✨ Generate My Video ➜";
+        button.innerText = "✨ Generate My Video ➜";
 
     }
 
+}
+
+/* CLOSE VIDEO */
+
+function closeResult() {
+    document.getElementById("result").style.display = "none";
+    const player = document.getElementById("videoPlayer");
+    player.pause();
+    player.removeAttribute("src");
+    player.load();
+}
+
+/* MY VIDEOS */
+
+function showMyVideos() {
+    document.getElementById("status").innerText =
+        "Your generated video will appear here after generation.";
 }
 
 </script>
