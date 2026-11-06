@@ -1,1096 +1,633 @@
-import os
-import time
-import random
-import shutil
-import subprocess
-import requests
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Yousaf Studio</title>
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from starlette.staticfiles import StaticFiles
-from pydantic import BaseModel
-from dotenv import load_dotenv
-from gtts import gTTS
-
-# ==========================================
-# 1. BASIC SETTINGS
-# ==========================================
-
-load_dotenv()
-
-APP_NAME = "AI Yousaf Studio"
-
-WIDTH = 720
-HEIGHT = 1280
-FPS = 24
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(BASE_DIR, "static")
-MUSIC_DIR = os.path.join(BASE_DIR, "music")
-
-os.makedirs(STATIC_DIR, exist_ok=True)
-os.makedirs(MUSIC_DIR, exist_ok=True)
-
-app = FastAPI(title=APP_NAME)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
-
-
-class CORSStaticFiles(StaticFiles):
-    async def get_response(self, path, scope):
-        response = await super().get_response(path, scope)
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Accept-Ranges"] = "bytes"
-        response.headers["Cache-Control"] = "no-store"
-        return response
-
-
-app.mount(
-    "/static",
-    CORSStaticFiles(directory=STATIC_DIR),
-    name="static"
-)
-
-
-# ==========================================
-# 2. REQUEST MODEL
-# ==========================================
-
-class PromptRequest(BaseModel):
-    prompt: str
-    background_type: str = "video"
-    poetry_type: str = "ai"
-    custom_poetry: str = ""
-    duration: int = 25
-    language: str = "Roman Urdu"
-    voice: str = "male"
-    music: str = "peaceful"
-
-
-# ==========================================
-# 3. HOME PAGE
-# ==========================================
-
-@app.get("/")
-async def serve_index():
-    return FileResponse(
-        os.path.join(STATIC_DIR, "index.html")
-    )
-
-
-@app.get("/health")
-async def health():
-    return {
-        "status": "online",
-        "app": APP_NAME
-    }
-
-
-# ==========================================
-# 4. LOCAL POETRY DATABASE
-# ==========================================
-
-POETRY_DATABASE = {
-
-    "sad": [
-        "Raat ki tanhai mein teri yaad aati hai,\n"
-        "Khamosh aankhon se barsaat ho jati hai,\n"
-        "Log samajhte hain hum khush rehte hain,\n"
-        "Magar dil mein har roz ek mulaqat hoti hai.",
-
-        "Kuch yaadein dil se kabhi jaati nahi,\n"
-        "Kuch baatein labon tak aati nahi,\n"
-        "Hum muskura kar chhupa lete hain gham,\n"
-        "Magar aankhein kabhi jhoot bol paati nahi."
-    ],
-
-    "love": [
-        "Tere ishq mein khud ko bhula diya,\n"
-        "Har khwab tere naam saja diya,\n"
-        "Tu paas ho toh duniya haseen lagti hai,\n"
-        "Teri muskurahat ne jeena sikha diya."
-    ],
-
-    "motivational": [
-        "Gir kar dobara uthna seekh le,\n"
-        "Har mushkil se ladna seekh le,\n"
-        "Manzil unhi ko milti hai aksar,\n"
-        "Jo haar kar bhi chalna seekh le."
-    ],
-
-    "deep": [
-        "Zindagi waqt ka ek safar hai,\n"
-        "Har chehra apni kahani ka asar hai,\n"
-        "Kuch log mil kar bichhar jaate hain,\n"
-        "Aur kuch yaadon mein amar ho jaate hain."
-    ]
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-
-def generate_local_poetry(prompt):
-
-    prompt = prompt.lower()
-
-    if any(x in prompt for x in [
-        "sad", "sadness", "dukh", "toot",
-        "breakup", "tanhai", "alone"
-    ]):
-        category = "sad"
-
-    elif any(x in prompt for x in [
-        "love", "ishq", "pyaar", "romantic"
-    ]):
-        category = "love"
-
-    elif any(x in prompt for x in [
-        "motivat", "success", "himmat", "kamyab"
-    ]):
-        category = "motivational"
-
-    else:
-        category = "deep"
-
-    return random.choice(POETRY_DATABASE[category])
-
-
-# ==========================================
-# 5. AI POETRY GENERATION
-# ==========================================
-
-def generate_poetry(prompt, poetry_type, custom_poetry):
-
-    if poetry_type == "custom":
-        if custom_poetry.strip():
-            return custom_poetry.strip()
-
-    api_key = os.getenv("GEMINI_API_KEY")
-
-    if not api_key:
-        print("Gemini key not found. Using local poetry.")
-        return generate_local_poetry(prompt)
-
-    instruction = f"""
-You are a professional Urdu poet.
-
-Write original, emotional poetry in Roman Urdu.
-
-Topic: {prompt}
-
-Rules:
-1. Write exactly 8 lines.
-2. Use beautiful Urdu vocabulary.
-3. Make the poetry emotional and meaningful.
-4. Every line should be suitable for a poetry video.
-5. Output only poetry.
-6. No title or explanation.
-"""
-
-    models = [
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
-    ]
-
-    for model in models:
-
-        try:
-
-            url = (
-                "https://generativelanguage.googleapis.com/"
-                f"v1beta/models/{model}:generateContent"
-                f"?key={api_key}"
-            )
-
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {"text": instruction}
-                        ]
-                    }
-                ]
-            }
-
-            response = requests.post(
-                url,
-                json=payload,
-                timeout=40
-            )
-
-            if response.status_code == 200:
-
-                data = response.json()
-
-                poetry = data["candidates"][0][
-                    "content"
-                ]["parts"][0]["text"].strip()
-
-                lines = [
-                    line.strip()
-                    for line in poetry.splitlines()
-                    if line.strip()
-                ]
-
-                if len(lines) >= 4:
-                    return "\n".join(lines[:8])
-
-        except Exception as error:
-            print("AI Poetry Error:", error)
-
-    return generate_local_poetry(prompt)
-
-
-# ==========================================
-# 6. ROMAN URDU TO HINDI FOR VOICE
-# ==========================================
-
-def convert_roman_to_hindi(text):
-
-    api_key = os.getenv("GEMINI_API_KEY")
-
-    if not api_key:
-        return text
-
-    instruction = f"""
-Convert this Roman Urdu poetry into Devanagari Hindi script.
-
-Keep the original Urdu pronunciation and meaning.
-
-Output only converted text.
-
-{text}
-"""
-
-    models = ["gemini-2.0-flash", "gemini-1.5-flash"]
-
-    for model in models:
-
-        try:
-
-            url = (
-                "https://generativelanguage.googleapis.com/"
-                f"v1beta/models/{model}:generateContent"
-                f"?key={api_key}"
-            )
-
-            response = requests.post(
-                url,
-                json={
-                    "contents": [{
-                        "parts": [{"text": instruction}]
-                    }]
-                },
-                timeout=30
-            )
-
-            if response.status_code == 200:
-
-                result = response.json()
-
-                return result["candidates"][0][
-                    "content"
-                ]["parts"][0]["text"].strip()
-
-        except Exception as error:
-            print("Translation Error:", error)
-
-    return text
-
-
-# ==========================================
-# 7. VOICE GENERATION
-# ==========================================
-
-def generate_voice(poetry, output_path, language="Roman Urdu"):
-
-    try:
-
-        is_urdu = any(
-            '\u0600' <= char <= '\u06FF'
-            for char in poetry
-        )
-
-        if is_urdu:
-            voice_text = poetry
-            voice_language = "ur"
-
-        elif language.lower() in ["english"]:
-            voice_text = poetry
-            voice_language = "en"
-
-        else:
-            voice_text = convert_roman_to_hindi(poetry)
-            voice_language = "hi"
-
-        voice_text = voice_text.replace("\n", ". ")
-
-        tts = gTTS(
-            text=voice_text,
-            lang=voice_language,
-            slow=False
-        )
-
-        tts.save(output_path)
-
-        return (
-            os.path.exists(output_path)
-            and os.path.getsize(output_path) > 1000
-        )
-
-    except Exception as error:
-
-        print("Voice Error:", error)
-        return False
-
-
-# ==========================================
-# 8. AUDIO DURATION
-# ==========================================
-
-def get_audio_duration(path):
-
-    try:
-
-        result = subprocess.run(
-            [
-                "ffprobe",
-                "-v", "error",
-                "-show_entries", "format=duration",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                path
-            ],
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
-
-        if result.returncode == 0:
-            return float(result.stdout.strip())
-
-    except Exception as error:
-        print("Duration Error:", error)
-
-    return 0.0
-
-
-# ==========================================
-# 9. FFMPEG COMMAND HELPER
-# ==========================================
-
-def run_ffmpeg(command, timeout=180):
-
-    try:
-
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            timeout=timeout
-        )
-
-        if result.returncode != 0:
-            print("FFmpeg Error:", result.stderr[-2000:])
-            return False
-
-        return True
-
-    except Exception as error:
-
-        print("FFmpeg Command Error:", error)
-        return False
-
-
-# ==========================================
-# 10. RANDOM BACKGROUND MUSIC
-# ==========================================
-
-def get_random_music():
-
-    files = [
-        os.path.join(MUSIC_DIR, f)
-        for f in os.listdir(MUSIC_DIR)
-        if f.lower().endswith((".mp3", ".wav"))
-    ]
-
-    return random.choice(files) if files else None
-
-
-# ==========================================
-# 11. PEXELS IMAGE DOWNLOAD
-# ==========================================
-
-def fetch_pexels_images(prompt, count, folder):
-
-    api_key = os.getenv("PEXELS_API_KEY")
-
-    if not api_key:
-        print("PEXELS_API_KEY missing.")
-        return []
-
-    paths = []
-
-    try:
-
-        response = requests.get(
-            "https://api.pexels.com/v1/search",
-            headers={"Authorization": api_key},
-            params={
-                "query": prompt,
-                "per_page": count,
-                "orientation": "portrait",
-                "page": random.randint(1, 5)
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(150deg,#10052b,#17052e,#09051b);
+    color: white;
+    min-height: 100vh;
+}
+
+header {
+    padding: 20px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 48px;
+    color: #ffca28;
+}
+
+.logo h1 {
+    font-size: 25px;
+}
+
+.logo h1 span {
+    color: #ffc928;
+}
+
+.logo p {
+    color: #ddd;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.pro {
+    border: 1px solid #ffc928;
+    color: #ffc928;
+    padding: 12px 17px;
+    border-radius: 30px;
+    font-weight: bold;
+}
+
+.container {
+    max-width: 1050px;
+    margin: auto;
+    padding: 10px 15px 35px;
+}
+
+.banner {
+    background: linear-gradient(110deg,#32115e,#651b91,#130a36);
+    border: 1px solid #a64cff;
+    border-radius: 20px;
+    padding: 30px 20px;
+    text-align: center;
+    margin-bottom: 18px;
+    box-shadow: 0 0 20px #8c26ff55;
+}
+
+.banner h2 {
+    font-size: 25px;
+}
+
+.banner h2 span {
+    color: #ffcf24;
+    font-size: 32px;
+}
+
+.banner p {
+    margin-top: 10px;
+    color: #eee;
+}
+
+.categories {
+    display: grid;
+    grid-template-columns: repeat(6,1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.category {
+    background: #170d31;
+    border: 1px solid #574077;
+    border-radius: 15px;
+    padding: 15px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.category .emoji {
+    display: block;
+    font-size: 27px;
+    margin-bottom: 8px;
+}
+
+.category.active {
+    background: linear-gradient(140deg,#9b25ff,#4a0c91);
+    border: 2px solid #e7baff;
+    box-shadow: 0 0 15px #a52cff;
+}
+
+.category:hover {
+    border-color: #ffca28;
+}
+
+.form-card {
+    background: linear-gradient(140deg,#241047,#160a30);
+    border: 1px solid #a43aff;
+    border-radius: 25px;
+    padding: 23px;
+    box-shadow: 0 0 25px #841aff33;
+}
+
+.section-title {
+    font-size: 19px;
+    margin-bottom: 14px;
+    color: white;
+}
+
+input, select, textarea {
+    width: 100%;
+    background: #100921;
+    border: 1px solid #75519d;
+    color: white;
+    border-radius: 13px;
+    padding: 15px;
+    font-size: 15px;
+    outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #ffc928;
+}
+
+textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+select option {
+    background: #1b0d35;
+    color: white;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 18px;
+    margin-top: 25px;
+}
+
+.field label {
+    display: block;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.field label span {
+    color: #ffc928;
+    margin-right: 6px;
+}
+
+.custom-box {
+    display: none;
+    margin-top: 20px;
+}
+
+.generate-btn {
+    width: 100%;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(90deg,#ffb900,#ffe44c,#ffb900);
+    color: #170b26;
+    font-size: 21px;
+    font-weight: bold;
+    padding: 20px 10px;
+    margin-top: 28px;
+    cursor: pointer;
+    box-shadow: 0 5px 22px #ffbf0080;
+}
+
+.generate-btn:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+.features {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #eee;
+    flex-wrap: wrap;
+}
+
+.templates {
+    margin-top: 32px;
+}
+
+.templates h2 {
+    font-size: 21px;
+    margin-bottom: 15px;
+}
+
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 12px;
+}
+
+.template {
+    border: 1px solid #8056a5;
+    border-radius: 15px;
+    padding: 35px 5px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+    background: linear-gradient(150deg,#54206d,#150c32);
+    min-height: 110px;
+}
+
+.template:hover {
+    border-color: #ffca28;
+    box-shadow: 0 0 12px #a52cff;
+}
+
+#status {
+    margin-top: 20px;
+    text-align: center;
+    color: #ffcf32;
+    font-size: 15px;
+    white-space: pre-wrap;
+}
+
+.result {
+    display: none;
+    margin-top: 25px;
+    background: #190d30;
+    border: 1px solid #a43aff;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+}
+
+video {
+    width: 100%;
+    max-width: 400px;
+    max-height: 600px;
+    background: black;
+    border-radius: 15px;
+    margin-top: 15px;
+}
+
+.download-btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 14px 25px;
+    border-radius: 30px;
+    background: #ffc928;
+    color: #160b28;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #aaa;
+    font-size: 13px;
+}
+
+@media(max-width:650px) {
+    .logo h1 {
+        font-size: 19px;
+    }
+
+    .logo-icon {
+        font-size: 35px;
+    }
+
+    .pro {
+        padding: 9px;
+        font-size: 12px;
+    }
+
+    .categories {
+        grid-template-columns: repeat(3,1fr);
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .template-grid {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .form-card {
+        padding: 16px;
+    }
+
+    .banner h2 {
+        font-size: 21px;
+    }
+
+    .banner h2 span {
+        font-size: 25px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        <div class="logo-icon">▷</div>
+        <div>
+            <h1><span>AI</span> Yousaf Studio</h1>
+            <p>Turn Your Thoughts Into Stunning Videos ✨</p>
+        </div>
+    </div>
+    <div class="pro">👑 Pro</div>
+</header>
+
+<main class="container">
+
+    <section class="banner">
+        <h2>Create Beautiful<br>
+        <span>Poetry Videos</span></h2>
+        <p>With AI Power ✨ | Simple • Fast • Creative</p>
+    </section>
+
+    <section class="categories">
+
+        <div class="category active" data-type="poetry">
+            <span class="emoji">🪶</span>Poetry
+        </div>
+
+        <div class="category" data-type="story">
+            <span class="emoji">🎬</span>Story Video
+        </div>
+
+        <div class="category" data-type="motivational">
+            <span class="emoji">🏆</span>Motivational
+        </div>
+
+        <div class="category" data-type="love">
+            <span class="emoji">💕</span>Love
+        </div>
+
+        <div class="category" data-type="sad">
+            <span class="emoji">💔</span>Sad Poetry
+        </div>
+
+        <div class="category" data-type="deep">
+            <span class="emoji">✨</span>More
+        </div>
+
+    </section>
+
+    <section class="form-card">
+
+        <h2 class="section-title">✏️ 1. Enter Your Topic</h2>
+
+        <input
+            type="text"
+            id="topic"
+            placeholder="Write your topic here... (e.g. Broken Heart, Love, Life)"
+        >
+
+        <div class="grid">
+
+            <div class="field">
+                <label><span>📚</span>2. Poetry Style</label>
+                <select id="poetryStyle">
+                    <option value="ai">AI Generated Poetry</option>
+                    <option value="custom">My Own Poetry</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label><span>⏱️</span>3. Duration</label>
+                <select id="duration">
+                    <option value="25">25 Seconds</option>
+                    <option value="30">30 Seconds</option>
+                    <option value="45">45 Seconds</option>
+                    <option value="60">60 Seconds</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label><span>🌐</span>4. Language</label>
+                <select id="language">
+                    <option value="roman">Roman Urdu</option>
+                    <option value="urdu">Urdu</option>
+                    <option value="english">English</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label><span>🖼️</span>5. Background</label>
+                <select id="background">
+                    <option value="video">🎬 Video Background</option>
+                    <option value="image">🌄 Image Background</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label><span>🎙️</span>6. Voice</label>
+                <select id="voice">
+                    <option value="male">Male Voice</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label><span>🎵</span>7. Music</label>
+                <select id="music">
+                    <option value="peaceful">Peaceful</option>
+                    <option value="sad">Sad Music</option>
+                    <option value="romantic">Romantic</option>
+                    <option value="none">No Music</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="custom-box" id="customBox">
+            <h3 class="section-title">📝 Enter Your Own Poetry</h3>
+            <textarea id="customPoetry"
+                placeholder="Yahan apni poetry likhein..."></textarea>
+        </div>
+
+        <button class="generate-btn" id="generateBtn"
+            onclick="generateVideo()">
+            ✨ Generate My Video ➜
+        </button>
+
+        <div id="status"></div>
+
+        <div class="features">
+            <span>⚡ Fast Generation</span>
+            <span>🎞️ HD Quality</span>
+            <span>⬇️ Download & Share</span>
+        </div>
+
+    </section>
+
+    <section class="result" id="result">
+        <h2>🎉 Your Video Is Ready!</h2>
+        <video id="videoPlayer" controls playsinline></video>
+        <br>
+        <a id="downloadLink" class="download-btn"
+           href="#" download="AI_Yousaf_Studio.mp4">
+            ⬇️ Download Video
+        </a>
+    </section>
+
+    <section class="templates">
+        <h2>⭐ Popular Templates</h2>
+
+        <div class="template-grid">
+
+            <div class="template" data-topic="Urdu poetry">
+                🌅<br>Urdu Poetry
+            </div>
+
+            <div class="template" data-topic="Love and romance">
+                🌹<br>Love Poetry
+            </div>
+
+            <div class="template" data-topic="Motivation and success">
+                🏆<br>Motivational Quotes
+            </div>
+
+            <div class="template" data-topic="Sad and lonely life">
+                🌧️<br>Sad Poetry
+            </div>
+
+            <div class="template" data-topic="Islamic reminders">
+                🕌<br>Islamic Videos
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    © 2026 AI Yousaf Studio | Create With Creativity ✨
+</footer>
+
+<script>
+
+const API_URL = "/generate-video";
+
+let selectedCategory = "poetry";
+
+document.querySelectorAll(".category").forEach(item => {
+    item.addEventListener("click", () => {
+
+        document.querySelectorAll(".category").forEach(c =>
+            c.classList.remove("active")
+        );
+
+        item.classList.add("active");
+        selectedCategory = item.dataset.type;
+
+        const topic = document.getElementById("topic");
+
+        if(selectedCategory === "sad") topic.value = "Sad and broken heart";
+        if(selectedCategory === "love") topic.value = "Love and Ishq";
+        if(selectedCategory === "motivational") topic.value = "Success and motivation";
+        if(selectedCategory === "story") topic.value = "Emotional life story";
+        if(selectedCategory === "deep") topic.value = "Deep thoughts about life";
+    });
+});
+
+document.querySelectorAll(".template").forEach(item => {
+    item.addEventListener("click", () => {
+        document.getElementById("topic").value = item.dataset.topic;
+        window.scrollTo({top: 0, behavior: "smooth"});
+    });
+});
+
+document.getElementById("poetryStyle").addEventListener("change", function() {
+    document.getElementById("customBox").style.display =
+        this.value === "custom" ? "block" : "none";
+});
+
+async function generateVideo() {
+
+    const topic = document.getElementById("topic").value.trim();
+    const poetryType = document.getElementById("poetryStyle").value;
+    const customPoetry = document.getElementById("customPoetry").value.trim();
+    const background = document.getElementById("background").value;
+
+    const status = document.getElementById("status");
+    const button = document.getElementById("generateBtn");
+    const result = document.getElementById("result");
+
+    if(!topic) {
+        status.innerText = "⚠️ Please enter your topic first.";
+        return;
+    }
+
+    if(poetryType === "custom" && !customPoetry) {
+        status.innerText = "⚠️ Please enter your own poetry.";
+        return;
+    }
+
+    button.disabled = true;
+    button.innerText = "⏳ Generating Your Video...";
+    status.innerText = "Please wait... Your video is being created.";
+    result.style.display = "none";
+
+    try {
+
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
             },
-            timeout=30
-        )
-
-        response.raise_for_status()
-
-        photos = response.json().get("photos", [])
-
-        for i, photo in enumerate(photos):
-
-            image_url = photo["src"].get("large2x")
-
-            if not image_url:
-                continue
-
-            image_response = requests.get(
-                image_url,
-                timeout=60
-            )
-
-            if image_response.status_code == 200:
-
-                path = os.path.join(
-                    folder,
-                    f"image_{i}.jpg"
-                )
-
-                with open(path, "wb") as file:
-                    file.write(image_response.content)
-
-                paths.append(path)
-
-    except Exception as error:
-        print("Pexels Image Error:", error)
-
-    return paths
-
-
-# ==========================================
-# 12. PEXELS VIDEO DOWNLOAD
-# ==========================================
-
-def fetch_pexels_videos(prompt, count, folder):
-
-    api_key = os.getenv("PEXELS_API_KEY")
-
-    if not api_key:
-        print("PEXELS_API_KEY missing.")
-        return []
-
-    paths = []
-
-    try:
-
-        response = requests.get(
-            "https://api.pexels.com/videos/search",
-            headers={"Authorization": api_key},
-            params={
-                "query": prompt,
-                "per_page": count,
-                "orientation": "portrait",
-                "page": random.randint(1, 5)
-            },
-            timeout=30
-        )
-
-        response.raise_for_status()
-
-        videos = response.json().get("videos", [])
-
-        for i, video in enumerate(videos):
-
-            video_files = video.get("video_files", [])
-
-            if not video_files:
-                continue
-
-            suitable = sorted(
-                video_files,
-                key=lambda x: (
-                    x.get("width", 0) >= 720,
-                    x.get("width", 0)
-                ),
-                reverse=True
-            )
-
-            video_url = suitable[0].get("link")
-
-            if not video_url:
-                continue
-
-            video_response = requests.get(
-                video_url,
-                timeout=120
-            )
-
-            if video_response.status_code == 200:
-
-                path = os.path.join(
-                    folder,
-                    f"video_{i}.mp4"
-                )
-
-                with open(path, "wb") as file:
-                    file.write(video_response.content)
-
-                paths.append(path)
-
-    except Exception as error:
-        print("Pexels Video Error:", error)
-
-    return paths
-
-
-# ==========================================
-# 13. POETRY SUBTITLE FILTER
-# ==========================================
-
-def build_poetry_drawtext(poetry, folder, duration):
-
-    lines = [
-        line.strip()
-        for line in poetry.splitlines()
-        if line.strip()
-    ]
-
-    if not lines:
-        return ""
-
-    filters = []
-
-    line_duration = duration / len(lines)
-
-    font_file = (
-        "C\\:/Windows/Fonts/arialbd.ttf"
-        if os.name == "nt"
-        else "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-    )
-
-    for i, line in enumerate(lines):
-
-        text_file = os.path.join(
-            folder,
-            f"subtitle_{i}.txt"
-        )
-
-        with open(text_file, "w", encoding="utf-8") as file:
-            file.write(line)
-
-        text_path = text_file.replace("\\", "/")
-
-        if os.name == "nt":
-            text_path = text_path.replace(":", "\\:")
-
-        start = i * line_duration
-        end = (i + 1) * line_duration
-
-        filters.append(
-            "drawtext="
-            f"fontfile='{font_file}':"
-            f"textfile='{text_path}':"
-            "fontcolor=white:"
-            "fontsize=32:"
-            "borderw=3:"
-            "bordercolor=black:"
-            "shadowcolor=black:"
-            "shadowx=2:"
-            "shadowy=2:"
-            "x=(w-text_w)/2:"
-            "y=h-220:"
-            f"enable='between(t,{start:.2f},{end:.2f})'"
-        )
-
-    return ",".join(filters)
-
-
-# ==========================================
-# 14. FINAL VIDEO PROCESSING
-# ==========================================
-
-def finish_video(
-    silent_video,
-    output_path,
-    poetry,
-    voice_file,
-    folder,
-    duration
-):
-
-    subtitle_filter = build_poetry_drawtext(
-        poetry,
-        folder,
-        duration
-    )
-
-    subtitled_video = os.path.join(
-        folder,
-        "subtitled.mp4"
-    )
-
-    if subtitle_filter:
-
-        if not run_ffmpeg([
-            "ffmpeg", "-y",
-            "-i", silent_video,
-            "-vf", subtitle_filter,
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-pix_fmt", "yuv420p",
-            "-an",
-            "-movflags", "+faststart",
-            subtitled_video
-        ]):
-            return False
-
-    else:
-        subtitled_video = silent_video
-
-    music_file = get_random_music()
-
-    has_voice = (
-        voice_file
-        and os.path.exists(voice_file)
-    )
-
-    if has_voice and music_file:
-
-        command = [
-            "ffmpeg", "-y",
-            "-i", subtitled_video,
-            "-i", voice_file,
-            "-stream_loop", "-1",
-            "-i", music_file,
-            "-filter_complex",
-            "[1:a]volume=1.5[voice];"
-            "[2:a]volume=0.15[music];"
-            "[voice][music]amix=inputs=2:duration=first:dropout_transition=2[aout]",
-            "-map", "0:v",
-            "-map", "[aout]",
-            "-c:v", "copy",
-            "-c:a", "aac",
-            "-b:a", "192k",
-            "-t", str(duration),
-            "-movflags", "+faststart",
-            output_path
-        ]
-
-    elif has_voice:
-
-        command = [
-            "ffmpeg", "-y",
-            "-i", subtitled_video,
-            "-i", voice_file,
-            "-map", "0:v",
-            "-map", "1:a",
-            "-c:v", "copy",
-            "-c:a", "aac",
-            "-t", str(duration),
-            "-movflags", "+faststart",
-            output_path
-        ]
-
-    elif music_file:
-
-        command = [
-            "ffmpeg", "-y",
-            "-i", subtitled_video,
-            "-stream_loop", "-1",
-            "-i", music_file,
-            "-map", "0:v",
-            "-map", "1:a",
-            "-c:v", "copy",
-            "-c:a", "aac",
-            "-t", str(duration),
-            "-movflags", "+faststart",
-            output_path
-        ]
-
-    else:
-
-        shutil.copy2(subtitled_video, output_path)
-        return True
-
-    success = run_ffmpeg(command)
-
-    return (
-        success
-        and os.path.exists(output_path)
-        and os.path.getsize(output_path) > 10000
-    )
-
-
-# ==========================================
-# 15. VIDEO FROM IMAGES
-# ==========================================
-
-def create_video_from_images(
-    images,
-    output_path,
-    poetry,
-    voice_file,
-    folder,
-    duration
-):
-
-    if not images:
-        return False
-
-    per_image = duration / len(images)
-
-    clips = []
-
-    for i, image in enumerate(images):
-
-        clip = os.path.join(
-            folder,
-            f"image_clip_{i}.mp4"
-        )
-
-        command = [
-            "ffmpeg", "-y",
-            "-loop", "1",
-            "-i", image,
-            "-t", str(per_image),
-            "-vf",
-            (
-                f"scale={WIDTH}:{HEIGHT}:"
-                "force_original_aspect_ratio=increase,"
-                f"crop={WIDTH}:{HEIGHT},"
-                f"fps={FPS},"
-                "format=yuv420p,"
-                "zoompan=z='min(zoom+0.0005,1.12)':"
-                "d=1:s=720x1280:fps=24"
-            ),
-            "-an",
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-pix_fmt", "yuv420p",
-            clip
-        ]
-
-        if not run_ffmpeg(command):
-            return False
-
-        clips.append(clip)
-
-    concat_file = os.path.join(
-        folder,
-        "images_concat.txt"
-    )
-
-    with open(concat_file, "w", encoding="utf-8") as file:
-        for clip in clips:
-            file.write(
-                f"file '{os.path.abspath(clip)}'\n"
-            )
-
-    silent_video = os.path.join(
-        folder,
-        "images_silent.mp4"
-    )
-
-    if not run_ffmpeg([
-        "ffmpeg", "-y",
-        "-f", "concat",
-        "-safe", "0",
-        "-i", concat_file,
-        "-c", "copy",
-        "-t", str(duration),
-        silent_video
-    ]):
-        return False
-
-    return finish_video(
-        silent_video,
-        output_path,
-        poetry,
-        voice_file,
-        folder,
-        duration
-    )
-
-
-# ==========================================
-# 16. VIDEO FROM VIDEO CLIPS
-# ==========================================
-
-def create_video_from_clips(
-    videos,
-    output_path,
-    poetry,
-    voice_file,
-    folder,
-    duration
-):
-
-    if not videos:
-        return False
-
-    concat_file = os.path.join(
-        folder,
-        "videos_concat.txt"
-    )
-
-    with open(concat_file, "w", encoding="utf-8") as file:
-
-        # Repeat clips to fill requested duration
-        for _ in range(10):
-            for video in videos:
-                file.write(
-                    f"file '{os.path.abspath(video)}'\n"
-                )
-
-    silent_video = os.path.join(
-        folder,
-        "videos_silent.mp4"
-    )
-
-    command = [
-        "ffmpeg", "-y",
-        "-f", "concat",
-        "-safe", "0",
-        "-i", concat_file,
-        "-vf",
-        (
-            f"scale={WIDTH}:{HEIGHT}:"
-            "force_original_aspect_ratio=increase,"
-            f"crop={WIDTH}:{HEIGHT},"
-            f"fps={FPS},"
-            "format=yuv420p"
-        ),
-        "-an",
-        "-t", str(duration),
-        "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-pix_fmt", "yuv420p",
-        "-movflags", "+faststart",
-        silent_video
-    ]
-
-    if not run_ffmpeg(command, timeout=300):
-        return False
-
-    return finish_video(
-        silent_video,
-        output_path,
-        poetry,
-        voice_file,
-        folder,
-        duration
-    )
-
-
-# ==========================================
-# 17. MAIN VIDEO GENERATION API
-# ==========================================
-
-@app.post("/generate-video")
-async def generate_video(request: PromptRequest):
-
-    folder = None
-
-    try:
-
-        timestamp = int(time.time() * 1000)
-
-        folder = os.path.join(
-            STATIC_DIR,
-            f"temp_{timestamp}"
-        )
-
-        os.makedirs(folder, exist_ok=True)
-
-        final_filename = f"output_{timestamp}.mp4"
-
-        final_path = os.path.join(
-            STATIC_DIR,
-            final_filename
-        )
-
-        print("\n================================")
-        print("AI YOUSAF STUDIO")
-        print("================================")
-
-        print("Prompt:", request.prompt)
-        print("Background:", request.background_type)
-        print("Poetry Type:", request.poetry_type)
-
-        # Generate poetry
-
-        poetry = generate_poetry(
-            request.prompt,
-            request.poetry_type,
-            request.custom_poetry
-        )
-
-        if not poetry:
-            return {
-                "status": "error",
-                "message": "Poetry generate nahi ho saki."
-            }
-
-        print("Poetry generated successfully.")
-
-        # Generate voice
-
-        voice_file = os.path.join(
-            folder,
-            "voice.mp3"
-        )
-
-        voice_success = generate_voice(
-            poetry,
-            voice_file,
-            request.language
-        )
-
-        if voice_success:
-            print("Voice generated successfully.")
-        else:
-            print("Voice unavailable. Continuing without voice.")
-
-        # Calculate video duration
-
-        try:
-            requested_duration = max(
-                10,
-                min(int(request.duration), 120)
-            )
-        except (ValueError, TypeError):
-            requested_duration = 25
-
-        voice_duration = (
-            get_audio_duration(voice_file)
-            if voice_success else 0
-        )
-
-        video_duration = max(
-            requested_duration,
-            voice_duration + 2
-        )
-
-        # Generate background
-
-        if request.background_type.lower() == "image":
-
-            print("Downloading background images...")
-
-            backgrounds = fetch_pexels_images(
-                request.prompt,
-                5,
-                folder
-            )
-
-            if not backgrounds:
-                return {
-                    "status": "error",
-                    "message": "Pexels se images nahi milin."
-                }
-
-            success = create_video_from_images(
-                backgrounds,
-                final_path,
-                poetry,
-                voice_file if voice_success else None,
-                folder,
-                video_duration
-            )
-
-        else:
-
-            print("Downloading background videos...")
-
-            backgrounds = fetch_pexels_videos(
-                request.prompt,
-                5,
-                folder
-            )
-
-            if not backgrounds:
-                return {
-                    "status": "error",
-                    "message": "Pexels se videos nahi milin."
-                }
-
-            success = create_video_from_clips(
-                backgrounds,
-                final_path,
-                poetry,
-                voice_file if voice_success else None,
-                folder,
-                video_duration
-            )
-
-        if not success:
-            return {
-                "status": "error",
-                "message": "Video generation fail ho gayi."
-            }
-
-        if not os.path.exists(final_path):
-            return {
-                "status": "error",
-                "message": "Final video file nahi mili."
-            }
-
-        video_url = f"/static/{final_filename}"
-
-        print("Video generated successfully!")
-        print("Video:", final_path)
-
-        return {
-            "status": "success",
-            "message": "Video successfully generated!",
-            "video_url": video_url,
-            "poetry": poetry,
-            "duration": video_duration,
-            "filename": final_filename
+            body: JSON.stringify({
+                prompt: topic,
+                background_type: background,
+                poetry_type: poetryType,
+                custom_poetry: customPoetry
+            })
+        });
+
+        const data = await response.json();
+
+        if(!response.ok || data.status !== "success") {
+            throw new Error(data.message || "Video generation failed.");
         }
 
-    except Exception as error:
+        const videoUrl = data.video_url +
+            (data.video_url.includes("?") ? "&" : "?") +
+            "t=" + Date.now();
 
-        print("MAIN ERROR:", error)
+        const player = document.getElementById("videoPlayer");
 
-        return {
-            "status": "error",
-            "message": str(error)
-        }
+        player.src = videoUrl;
+        player.load();
 
-    finally:
+        document.getElementById("downloadLink").href = videoUrl;
 
-        if folder and os.path.exists(folder):
-            shutil.rmtree(folder, ignore_errors=True)
+        result.style.display = "block";
+        status.innerText = "✅ Video successfully generated!";
 
+        result.scrollIntoView({behavior: "smooth"});
 
-# ==========================================
-# 18. RUN SERVER
-# ==========================================
+    } catch(error) {
 
-if __name__ == "__main__":
+        console.error(error);
+        status.innerText = "❌ Error: " + error.message;
 
-    import uvicorn
+    } finally {
 
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8000
-    )
+        button.disabled = false;
+        button.innerText = "✨ Generate My Video ➜";
+
+    }
+}
+
+</script>
+
+</body>
+</html>
