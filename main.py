@@ -3,6 +3,7 @@ import time
 import random
 import shutil
 import subprocess
+import threading
 import requests
 
 from fastapi import FastAPI
@@ -14,7 +15,7 @@ from dotenv import load_dotenv
 from gtts import gTTS
 
 # ==========================================
-# 1. BASIC SETTINGS
+# 1. BASIC SETTINGS - 512 MB RAM
 # ==========================================
 
 load_dotenv()
@@ -23,7 +24,11 @@ APP_NAME = "AI Yousaf Studio"
 
 WIDTH = 720
 HEIGHT = 1280
-FPS = 24
+FPS = 20
+
+MAX_VIDEO_MB = 35
+MAX_IMAGE_MB = 8
+MAX_DURATION = 60
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
@@ -34,13 +39,15 @@ os.makedirs(MUSIC_DIR, exist_ok=True)
 
 app = FastAPI(title=APP_NAME)
 
+GENERATION_LOCK = threading.Lock()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
+    expose_headers=["*"]
 )
 
 
@@ -80,17 +87,18 @@ class PromptRequest(BaseModel):
 # ==========================================
 
 @app.get("/")
-async def serve_index():
+def serve_index():
     return FileResponse(
         os.path.join(STATIC_DIR, "index.html")
     )
 
 
 @app.get("/health")
-async def health():
+def health():
     return {
         "status": "online",
-        "app": APP_NAME
+        "app": APP_NAME,
+        "memory_mode": "low-memory-512mb"
     }
 
 
@@ -137,20 +145,20 @@ POETRY_DATABASE = {
 
 def generate_local_poetry(prompt):
 
-    prompt = prompt.lower()
+    p = (prompt or "").lower()
 
-    if any(x in prompt for x in [
+    if any(x in p for x in [
         "sad", "sadness", "dukh", "toot",
         "breakup", "tanhai", "alone"
     ]):
         category = "sad"
 
-    elif any(x in prompt for x in [
+    elif any(x in p for x in [
         "love", "ishq", "pyaar", "romantic"
     ]):
         category = "love"
 
-    elif any(x in prompt for x in [
+    elif any(x in p for x in [
         "motivat", "success", "himmat", "kamyab"
     ]):
         category = "motivational"
@@ -162,53 +170,27 @@ def generate_local_poetry(prompt):
 
 
 # ==========================================
-# 5. AI POETRY GENERATION
+# 5. GEMINI FREE TIER AI
 # ==========================================
 
-def generate_poetry(prompt, poetry_type, custom_poetry):
+def gemini_text(instruction, timeout=25):
 
-    if poetry_type == "custom":
-        if custom_poetry.strip():
-            return custom_poetry.strip()
+    key = os.getenv("GEMINI_API_KEY")
 
-    api_key = os.getenv("GEMINI_API_KEY")
+    if not key:
+        return None
 
-    if not api_key:
-        print("Gemini key not found. Using local poetry.")
-        return generate_local_poetry(prompt)
+    url = (
+        "https://generativelanguage.googleapis.com/"
+        "v1beta/models/gemini-2.0-flash:generateContent"
+        f"?key={key}"
+    )
 
-    instruction = f"""
-You are a professional Urdu poet.
+    try:
 
-Write original, emotional poetry in Roman Urdu.
-
-Topic: {prompt}
-
-Rules:
-1. Write exactly 8 lines.
-2. Use beautiful Urdu vocabulary.
-3. Make the poetry emotional and meaningful.
-4. Every line should be suitable for a poetry video.
-5. Output only poetry.
-6. No title or explanation.
-"""
-
-    models = [
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
-    ]
-
-    for model in models:
-
-        try:
-
-            url = (
-                "https://generativelanguage.googleapis.com/"
-                f"v1beta/models/{model}:generateContent"
-                f"?key={api_key}"
-            )
-
-            payload = {
+        response = requests.post(
+            url,
+            json={
                 "contents": [
                     {
                         "parts": [
@@ -216,92 +198,78 @@ Rules:
                         ]
                     }
                 ]
-            }
+            },
+            timeout=timeout
+        )
 
-            response = requests.post(
-                url,
-                json=payload,
-                timeout=40
+        if response.status_code != 200:
+            print(
+                "Gemini:",
+                response.status_code,
+                response.text[:400]
             )
+            return None
 
-            if response.status_code == 200:
+        return response.json()["candidates"][0][
+            "content"
+        ]["parts"][0]["text"].strip()
 
-                data = response.json()
+    except Exception as error:
 
-                poetry = data["candidates"][0][
-                    "content"
-                ]["parts"][0]["text"].strip()
+        print("Gemini error:", error)
+        return None
 
-                lines = [
-                    line.strip()
-                    for line in poetry.splitlines()
-                    if line.strip()
-                ]
 
-                if len(lines) >= 4:
-                    return "\n".join(lines[:8])
+def generate_poetry(prompt, poetry_type, custom_poetry):
 
-        except Exception as error:
-            print("AI Poetry Error:", error)
+    if poetry_type == "custom" and custom_poetry.strip():
+        return custom_poetry.strip()
+
+    instruction = f"""
+You are a professional Urdu poet.
+
+Write original emotional poetry in Roman Urdu.
+
+Topic: {prompt}
+
+Write 4 to 8 short meaningful lines.
+
+Output poetry only.
+No title or explanation.
+"""
+
+    result = gemini_text(instruction)
+
+    if result:
+
+        lines = [
+            x.strip()
+            for x in result.splitlines()
+            if x.strip()
+        ]
+
+        if len(lines) >= 2:
+            return "\n".join(lines[:8])
+
+    print("Using offline local poetry.")
 
     return generate_local_poetry(prompt)
 
 
 # ==========================================
-# 6. ROMAN URDU TO HINDI FOR VOICE
+# 6. ROMAN URDU CONVERSION
 # ==========================================
 
 def convert_roman_to_hindi(text):
 
-    api_key = os.getenv("GEMINI_API_KEY")
+    instruction = (
+        "Convert this Roman Urdu into Devanagari "
+        "script for Hindi TTS. Preserve Urdu "
+        "pronunciation and meaning. Output converted "
+        "text only:\n" + text
+    )
 
-    if not api_key:
-        return text
-
-    instruction = f"""
-Convert this Roman Urdu poetry into Devanagari Hindi script.
-
-Keep the original Urdu pronunciation and meaning.
-
-Output only converted text.
-
-{text}
-"""
-
-    models = ["gemini-2.0-flash", "gemini-1.5-flash"]
-
-    for model in models:
-
-        try:
-
-            url = (
-                "https://generativelanguage.googleapis.com/"
-                f"v1beta/models/{model}:generateContent"
-                f"?key={api_key}"
-            )
-
-            response = requests.post(
-                url,
-                json={
-                    "contents": [{
-                        "parts": [{"text": instruction}]
-                    }]
-                },
-                timeout=30
-            )
-
-            if response.status_code == 200:
-
-                result = response.json()
-
-                return result["candidates"][0][
-                    "content"
-                ]["parts"][0]["text"].strip()
-
-        except Exception as error:
-            print("Translation Error:", error)
-
-    return text
+    return gemini_text(instruction, 20) or text
 
 
 # ==========================================
@@ -313,40 +281,39 @@ def generate_voice(poetry, output_path, language="Roman Urdu"):
     try:
 
         is_urdu = any(
-            '\u0600' <= char <= '\u06FF'
-            for char in poetry
+            "\u0600" <= c <= "\u06FF"
+            for c in poetry
         )
 
         if is_urdu:
-            voice_text = poetry
-            voice_language = "ur"
 
-        elif language.lower() in ["english"]:
             voice_text = poetry
-            voice_language = "en"
+            lang = "ur"
+
+        elif language.lower() == "english":
+
+            voice_text = poetry
+            lang = "en"
 
         else:
+
             voice_text = convert_roman_to_hindi(poetry)
-            voice_language = "hi"
+            lang = "hi"
 
-        voice_text = voice_text.replace("\n", ". ")
-
-        tts = gTTS(
-            text=voice_text,
-            lang=voice_language,
+        gTTS(
+            text=voice_text.replace("\n", ". "),
+            lang=lang,
             slow=False
-        )
-
-        tts.save(output_path)
+        ).save(output_path)
 
         return (
-            os.path.exists(output_path)
+            os.path.isfile(output_path)
             and os.path.getsize(output_path) > 1000
         )
 
     except Exception as error:
 
-        print("Voice Error:", error)
+        print("Voice error:", error)
         return False
 
 
@@ -355,6 +322,9 @@ def generate_voice(poetry, output_path, language="Roman Urdu"):
 # ==========================================
 
 def get_audio_duration(path):
+
+    if not path or not shutil.which("ffprobe"):
+        return 0.0
 
     try:
 
@@ -368,247 +338,340 @@ def get_audio_duration(path):
             ],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=15
         )
 
-        if result.returncode == 0:
-            return float(result.stdout.strip())
+        return (
+            float(result.stdout.strip())
+            if result.returncode == 0 else 0.0
+        )
 
     except Exception as error:
-        print("Duration Error:", error)
 
-    return 0.0
+        print("Audio duration error:", error)
+        return 0.0
 
 
 # ==========================================
-# 9. FFMPEG COMMAND HELPER
+# 9. FFMPEG LOW RAM
 # ==========================================
 
-def run_ffmpeg(command, timeout=180):
+def run_ffmpeg(command, timeout=300):
+
+    if not shutil.which("ffmpeg"):
+        print("FFmpeg executable not found.")
+        return False
+
+    command = command[:1] + [
+        "-threads", "1",
+        "-filter_threads", "1",
+        "-filter_complex_threads", "1"
+    ] + command[1:]
 
     try:
 
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            timeout=timeout
-        )
+        with open(os.devnull, "w") as devnull:
 
-        if result.returncode != 0:
-            print("FFmpeg Error:", result.stderr[-2000:])
+            result = subprocess.run(
+                command,
+                stdout=devnull,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=timeout
+            )
+
+        if result.returncode:
+
+            print(
+                "FFmpeg error:",
+                (result.stderr or "")[-2200:]
+            )
+
             return False
 
         return True
 
+    except subprocess.TimeoutExpired:
+
+        print("FFmpeg timed out.")
+        return False
+
     except Exception as error:
 
-        print("FFmpeg Command Error:", error)
+        print("FFmpeg error:", error)
         return False
 
 
 # ==========================================
-# 10. RANDOM BACKGROUND MUSIC
+# 10. BACKGROUND MUSIC
 # ==========================================
 
 def get_random_music():
 
-    files = [
-        os.path.join(MUSIC_DIR, f)
-        for f in os.listdir(MUSIC_DIR)
-        if f.lower().endswith((".mp3", ".wav"))
-    ]
+    try:
 
-    return random.choice(files) if files else None
+        files = [
+            os.path.join(MUSIC_DIR, name)
+            for name in os.listdir(MUSIC_DIR)
+            if name.lower().endswith(
+                (".mp3", ".wav", ".m4a")
+            )
+        ]
+
+        return random.choice(files) if files else None
+
+    except Exception:
+
+        return None
 
 
 # ==========================================
-# 11. PEXELS IMAGE DOWNLOAD
+# 11. LIMITED DOWNLOAD
 # ==========================================
 
-def fetch_pexels_images(prompt, count, folder):
+def download_limited(
+    url,
+    output_path,
+    max_mb,
+    timeout=90
+):
 
-    api_key = os.getenv("PEXELS_API_KEY")
-
-    if not api_key:
-        print("PEXELS_API_KEY missing.")
-        return []
-
-    paths = []
+    limit = max_mb * 1024 * 1024
+    total = 0
 
     try:
 
-        response = requests.get(
-            "https://api.pexels.com/v1/search",
-            headers={"Authorization": api_key},
-            params={
-                "query": prompt,
-                "per_page": count,
-                "orientation": "portrait",
-                "page": random.randint(1, 5)
-            },
-            timeout=30
+        with requests.get(
+            url,
+            stream=True,
+            timeout=(15, timeout)
+        ) as response:
+
+            response.raise_for_status()
+
+            size = response.headers.get("Content-Length")
+
+            if size and int(size) > limit:
+
+                print("Download skipped: over size limit.")
+                return False
+
+            with open(output_path, "wb") as file:
+
+                for chunk in response.iter_content(
+                    chunk_size=64 * 1024
+                ):
+
+                    if not chunk:
+                        continue
+
+                    total += len(chunk)
+
+                    if total > limit:
+
+                        file.close()
+                        os.remove(output_path)
+
+                        print("Download stopped at size limit.")
+                        return False
+
+                    file.write(chunk)
+
+        return (
+            os.path.isfile(output_path)
+            and os.path.getsize(output_path) > 1000
         )
 
-        response.raise_for_status()
-
-        photos = response.json().get("photos", [])
-
-        for i, photo in enumerate(photos):
-
-            image_url = photo["src"].get("large2x")
-
-            if not image_url:
-                continue
-
-            image_response = requests.get(
-                image_url,
-                timeout=60
-            )
-
-            if image_response.status_code == 200:
-
-                path = os.path.join(
-                    folder,
-                    f"image_{i}.jpg"
-                )
-
-                with open(path, "wb") as file:
-                    file.write(image_response.content)
-
-                paths.append(path)
-
     except Exception as error:
-        print("Pexels Image Error:", error)
 
-    return paths
+        print("Download error:", error)
+
+        if os.path.exists(output_path):
+            os.remove(output_path)
+
+        return False
 
 
 # ==========================================
-# 12. PEXELS VIDEO DOWNLOAD
+# 12. PEXELS SEARCH
 # ==========================================
 
-def fetch_pexels_videos(prompt, count, folder):
+def pexels_search(endpoint, prompt, key):
 
-    api_key = os.getenv("PEXELS_API_KEY")
+    response = requests.get(
+        endpoint,
+        headers={"Authorization": key},
+        params={
+            "query": (prompt or "cinematic nature")[:100],
+            "per_page": 5,
+            "orientation": "portrait",
+            "page": 1
+        },
+        timeout=20
+    )
 
-    if not api_key:
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================
+# 13. PEXELS VIDEO
+# ==========================================
+
+def fetch_one_pexels_video(prompt, folder):
+
+    key = os.getenv("PEXELS_API_KEY")
+
+    if not key:
         print("PEXELS_API_KEY missing.")
-        return []
-
-    paths = []
+        return None
 
     try:
 
-        response = requests.get(
+        data = pexels_search(
             "https://api.pexels.com/videos/search",
-            headers={"Authorization": api_key},
-            params={
-                "query": prompt,
-                "per_page": count,
-                "orientation": "portrait",
-                "page": random.randint(1, 5)
-            },
-            timeout=30
+            prompt,
+            key
         )
 
-        response.raise_for_status()
+        choices = []
 
-        videos = response.json().get("videos", [])
+        for video in data.get("videos", []):
 
-        for i, video in enumerate(videos):
+            for item in video.get("video_files", []):
 
-            video_files = video.get("video_files", [])
+                link = item.get("link")
 
-            if not video_files:
-                continue
+                width = int(item.get("width") or 0)
+                height = int(item.get("height") or 0)
 
-            suitable = sorted(
-                video_files,
-                key=lambda x: (
-                    x.get("width", 0) >= 720,
-                    x.get("width", 0)
-                ),
-                reverse=True
+                if link and width >= 240 and height >= width:
+                    choices.append((width, link))
+
+        choices.sort(
+            key=lambda x: abs(x[0] - 480)
+        )
+
+        for i, (_, link) in enumerate(choices[:3]):
+
+            path = os.path.join(
+                folder,
+                f"background_{i}.mp4"
             )
 
-            video_url = suitable[0].get("link")
-
-            if not video_url:
-                continue
-
-            video_response = requests.get(
-                video_url,
-                timeout=120
-            )
-
-            if video_response.status_code == 200:
-
-                path = os.path.join(
-                    folder,
-                    f"video_{i}.mp4"
-                )
-
-                with open(path, "wb") as file:
-                    file.write(video_response.content)
-
-                paths.append(path)
+            if download_limited(
+                link,
+                path,
+                MAX_VIDEO_MB
+            ):
+                return path
 
     except Exception as error:
-        print("Pexels Video Error:", error)
 
-    return paths
+        print("Pexels video error:", error)
+
+    return None
 
 
 # ==========================================
-# 13. POETRY SUBTITLE FILTER
+# 14. PEXELS IMAGE FALLBACK
 # ==========================================
 
-def build_poetry_drawtext(poetry, folder, duration):
+def fetch_one_pexels_image(prompt, folder):
+
+    key = os.getenv("PEXELS_API_KEY")
+
+    if not key:
+        print("PEXELS_API_KEY missing.")
+        return None
+
+    try:
+
+        data = pexels_search(
+            "https://api.pexels.com/v1/search",
+            prompt,
+            key
+        )
+
+        photos = data.get("photos", [])
+
+        if not photos:
+            return None
+
+        url = random.choice(photos).get(
+            "src", {}
+        ).get("medium")
+
+        if not url:
+            return None
+
+        path = os.path.join(
+            folder,
+            "background.jpg"
+        )
+
+        return (
+            path
+            if download_limited(
+                url,
+                path,
+                MAX_IMAGE_MB,
+                60
+            )
+            else None
+        )
+
+    except Exception as error:
+
+        print("Pexels image error:", error)
+        return None
+
+
+# ==========================================
+# 15. SUBTITLES
+# ==========================================
+
+def escape_filter_path(path):
+
+    value = os.path.abspath(path).replace("\\", "/")
+
+    return value.replace(":", r"\:").replace("'", r"\'")
+
+
+def build_subtitle_filter(poetry, folder, duration):
 
     lines = [
-        line.strip()
-        for line in poetry.splitlines()
-        if line.strip()
-    ]
+        x.strip()
+        for x in poetry.splitlines()
+        if x.strip()
+    ][:8]
 
     if not lines:
-        return ""
+        return None
 
     filters = []
-
-    line_duration = duration / len(lines)
-
-    font_file = (
-        "C\\:/Windows/Fonts/arialbd.ttf"
-        if os.name == "nt"
-        else "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-    )
+    step = duration / len(lines)
 
     for i, line in enumerate(lines):
 
-        text_file = os.path.join(
+        path = os.path.join(
             folder,
             f"subtitle_{i}.txt"
         )
 
-        with open(text_file, "w", encoding="utf-8") as file:
+        with open(path, "w", encoding="utf-8") as file:
             file.write(line)
 
-        text_path = text_file.replace("\\", "/")
-
-        if os.name == "nt":
-            text_path = text_path.replace(":", "\\:")
-
-        start = i * line_duration
-        end = (i + 1) * line_duration
+        start = i * step
+        end = (i + 1) * step
 
         filters.append(
-            "drawtext="
-            f"fontfile='{font_file}':"
-            f"textfile='{text_path}':"
+            "drawtext=textfile='"
+            + escape_filter_path(path)
+            + "':"
             "fontcolor=white:"
-            "fontsize=32:"
+            "fontsize=34:"
             "borderw=3:"
             "bordercolor=black:"
             "shadowcolor=black:"
@@ -623,279 +686,113 @@ def build_poetry_drawtext(poetry, folder, duration):
 
 
 # ==========================================
-# 14. FINAL VIDEO PROCESSING
+# 16. FINAL VIDEO RENDER
 # ==========================================
 
-def finish_video(
-    silent_video,
-    output_path,
+def create_final_video(
+    background,
+    is_image,
+    output,
     poetry,
-    voice_file,
+    voice,
     folder,
     duration
 ):
 
-    subtitle_filter = build_poetry_drawtext(
+    subtitle = build_subtitle_filter(
         poetry,
         folder,
         duration
     )
 
-    subtitled_video = os.path.join(
-        folder,
-        "subtitled.mp4"
-    )
+    command = ["ffmpeg", "-y"]
 
-    if subtitle_filter:
+    if is_image:
 
-        if not run_ffmpeg([
-            "ffmpeg", "-y",
-            "-i", silent_video,
-            "-vf", subtitle_filter,
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-pix_fmt", "yuv420p",
-            "-an",
-            "-movflags", "+faststart",
-            subtitled_video
-        ]):
-            return False
+        command += [
+            "-loop", "1",
+            "-framerate", str(FPS),
+            "-i", background
+        ]
 
     else:
-        subtitled_video = silent_video
 
-    music_file = get_random_music()
+        command += [
+            "-stream_loop", "-1",
+            "-i", background
+        ]
 
-    has_voice = (
-        voice_file
-        and os.path.exists(voice_file)
+    has_voice = bool(
+        voice and os.path.isfile(voice)
     )
 
-    if has_voice and music_file:
+    music = get_random_music()
 
-        command = [
-            "ffmpeg", "-y",
-            "-i", subtitled_video,
-            "-i", voice_file,
+    if has_voice:
+        command += ["-i", voice]
+
+    if music:
+        command += [
             "-stream_loop", "-1",
-            "-i", music_file,
+            "-i", music
+        ]
+
+    vf = (
+        f"scale={WIDTH}:{HEIGHT}:"
+        "force_original_aspect_ratio=increase,"
+        f"crop={WIDTH}:{HEIGHT},"
+        f"fps={FPS},"
+        "format=yuv420p"
+    )
+
+    if subtitle:
+        vf += "," + subtitle
+
+    command += [
+        "-vf", vf,
+        "-map", "0:v:0"
+    ]
+
+    if has_voice and music:
+
+        command += [
             "-filter_complex",
-            "[1:a]volume=1.5[voice];"
-            "[2:a]volume=0.15[music];"
-            "[voice][music]amix=inputs=2:duration=first:dropout_transition=2[aout]",
-            "-map", "0:v",
-            "-map", "[aout]",
-            "-c:v", "copy",
-            "-c:a", "aac",
-            "-b:a", "192k",
-            "-t", str(duration),
-            "-movflags", "+faststart",
-            output_path
+            "[1:a]volume=1.25[voice];"
+            "[2:a]volume=0.12[music];"
+            "[voice][music]amix=inputs=2:"
+            "duration=first:dropout_transition=2[aout]",
+            "-map", "[aout]"
         ]
 
     elif has_voice:
 
-        command = [
-            "ffmpeg", "-y",
-            "-i", subtitled_video,
-            "-i", voice_file,
-            "-map", "0:v",
-            "-map", "1:a",
-            "-c:v", "copy",
-            "-c:a", "aac",
-            "-t", str(duration),
-            "-movflags", "+faststart",
-            output_path
-        ]
+        command += ["-map", "1:a:0"]
 
-    elif music_file:
+    elif music:
 
-        command = [
-            "ffmpeg", "-y",
-            "-i", subtitled_video,
-            "-stream_loop", "-1",
-            "-i", music_file,
-            "-map", "0:v",
-            "-map", "1:a",
-            "-c:v", "copy",
-            "-c:a", "aac",
-            "-t", str(duration),
-            "-movflags", "+faststart",
-            output_path
-        ]
+        command += ["-map", "1:a:0"]
 
-    else:
-
-        shutil.copy2(subtitled_video, output_path)
-        return True
+    command += [
+        "-t", str(duration),
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-crf", "28",
+        "-pix_fmt", "yuv420p",
+        "-r", str(FPS),
+        "-c:a", "aac",
+        "-b:a", "96k",
+        "-ac", "2",
+        "-movflags", "+faststart",
+        "-threads", "1",
+        output
+    ]
 
     success = run_ffmpeg(command)
 
     return (
         success
-        and os.path.exists(output_path)
-        and os.path.getsize(output_path) > 10000
-    )
-
-
-# ==========================================
-# 15. VIDEO FROM IMAGES
-# ==========================================
-
-def create_video_from_images(
-    images,
-    output_path,
-    poetry,
-    voice_file,
-    folder,
-    duration
-):
-
-    if not images:
-        return False
-
-    per_image = duration / len(images)
-
-    clips = []
-
-    for i, image in enumerate(images):
-
-        clip = os.path.join(
-            folder,
-            f"image_clip_{i}.mp4"
-        )
-
-        command = [
-            "ffmpeg", "-y",
-            "-loop", "1",
-            "-i", image,
-            "-t", str(per_image),
-            "-vf",
-            (
-                f"scale={WIDTH}:{HEIGHT}:"
-                "force_original_aspect_ratio=increase,"
-                f"crop={WIDTH}:{HEIGHT},"
-                f"fps={FPS},"
-                "format=yuv420p,"
-                "zoompan=z='min(zoom+0.0005,1.12)':"
-                "d=1:s=720x1280:fps=24"
-            ),
-            "-an",
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-pix_fmt", "yuv420p",
-            clip
-        ]
-
-        if not run_ffmpeg(command):
-            return False
-
-        clips.append(clip)
-
-    concat_file = os.path.join(
-        folder,
-        "images_concat.txt"
-    )
-
-    with open(concat_file, "w", encoding="utf-8") as file:
-        for clip in clips:
-            file.write(
-                f"file '{os.path.abspath(clip)}'\n"
-            )
-
-    silent_video = os.path.join(
-        folder,
-        "images_silent.mp4"
-    )
-
-    if not run_ffmpeg([
-        "ffmpeg", "-y",
-        "-f", "concat",
-        "-safe", "0",
-        "-i", concat_file,
-        "-c", "copy",
-        "-t", str(duration),
-        silent_video
-    ]):
-        return False
-
-    return finish_video(
-        silent_video,
-        output_path,
-        poetry,
-        voice_file,
-        folder,
-        duration
-    )
-
-
-# ==========================================
-# 16. VIDEO FROM VIDEO CLIPS
-# ==========================================
-
-def create_video_from_clips(
-    videos,
-    output_path,
-    poetry,
-    voice_file,
-    folder,
-    duration
-):
-
-    if not videos:
-        return False
-
-    concat_file = os.path.join(
-        folder,
-        "videos_concat.txt"
-    )
-
-    with open(concat_file, "w", encoding="utf-8") as file:
-
-        # Repeat clips to fill requested duration
-        for _ in range(10):
-            for video in videos:
-                file.write(
-                    f"file '{os.path.abspath(video)}'\n"
-                )
-
-    silent_video = os.path.join(
-        folder,
-        "videos_silent.mp4"
-    )
-
-    command = [
-        "ffmpeg", "-y",
-        "-f", "concat",
-        "-safe", "0",
-        "-i", concat_file,
-        "-vf",
-        (
-            f"scale={WIDTH}:{HEIGHT}:"
-            "force_original_aspect_ratio=increase,"
-            f"crop={WIDTH}:{HEIGHT},"
-            f"fps={FPS},"
-            "format=yuv420p"
-        ),
-        "-an",
-        "-t", str(duration),
-        "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-pix_fmt", "yuv420p",
-        "-movflags", "+faststart",
-        silent_video
-    ]
-
-    if not run_ffmpeg(command, timeout=300):
-        return False
-
-    return finish_video(
-        silent_video,
-        output_path,
-        poetry,
-        voice_file,
-        folder,
-        duration
+        and os.path.isfile(output)
+        and os.path.getsize(output) > 10000
     )
 
 
@@ -904,35 +801,45 @@ def create_video_from_clips(
 # ==========================================
 
 @app.post("/generate-video")
-async def generate_video(request: PromptRequest):
+def generate_video(request: PromptRequest):
+
+    if not GENERATION_LOCK.acquire(blocking=False):
+
+        return {
+            "status": "error",
+            "message": "A video is already being generated. Please wait."
+        }
 
     folder = None
 
     try:
 
-        timestamp = int(time.time() * 1000)
+        if not shutil.which("ffmpeg"):
+
+            return {
+                "status": "error",
+                "message": "FFmpeg server par installed nahi hai."
+            }
+
+        stamp = int(time.time() * 1000)
 
         folder = os.path.join(
             STATIC_DIR,
-            f"temp_{timestamp}"
+            f"temp_{stamp}"
         )
 
         os.makedirs(folder, exist_ok=True)
 
-        final_filename = f"output_{timestamp}.mp4"
+        filename = f"output_{stamp}.mp4"
 
         final_path = os.path.join(
             STATIC_DIR,
-            final_filename
+            filename
         )
 
-        print("\n================================")
-        print("AI YOUSAF STUDIO")
-        print("================================")
-
+        print("AI YOUSAF STUDIO - LOW RAM MODE")
         print("Prompt:", request.prompt)
         print("Background:", request.background_type)
-        print("Poetry Type:", request.poetry_type)
 
         # Generate poetry
 
@@ -943,132 +850,128 @@ async def generate_video(request: PromptRequest):
         )
 
         if not poetry:
+
             return {
                 "status": "error",
                 "message": "Poetry generate nahi ho saki."
             }
 
-        print("Poetry generated successfully.")
-
         # Generate voice
 
-        voice_file = os.path.join(
+        voice_path = os.path.join(
             folder,
             "voice.mp3"
         )
 
-        voice_success = generate_voice(
+        voice_ok = generate_voice(
             poetry,
-            voice_file,
+            voice_path,
             request.language
         )
 
-        if voice_success:
-            print("Voice generated successfully.")
-        else:
-            print("Voice unavailable. Continuing without voice.")
+        if not voice_ok:
+            voice_path = None
 
-        # Calculate video duration
+        # Duration
 
         try:
-            requested_duration = max(
+
+            requested = max(
                 10,
-                min(int(request.duration), 120)
+                min(int(request.duration), MAX_DURATION)
             )
+
         except (ValueError, TypeError):
-            requested_duration = 25
+
+            requested = 25
 
         voice_duration = (
-            get_audio_duration(voice_file)
-            if voice_success else 0
+            get_audio_duration(voice_path)
+            if voice_path else 0
         )
 
-        video_duration = max(
-            requested_duration,
-            voice_duration + 2
+        duration = min(
+            MAX_DURATION,
+            max(requested, voice_duration + 2)
         )
 
-        # Generate background
+        # Background
 
-        if request.background_type.lower() == "image":
+        image_mode = (
+            request.background_type.lower() == "image"
+        )
 
-            print("Downloading background images...")
+        if image_mode:
 
-            backgrounds = fetch_pexels_images(
+            print("Fetching one Pexels image...")
+
+            background = fetch_one_pexels_image(
                 request.prompt,
-                5,
                 folder
-            )
-
-            if not backgrounds:
-                return {
-                    "status": "error",
-                    "message": "Pexels se images nahi milin."
-                }
-
-            success = create_video_from_images(
-                backgrounds,
-                final_path,
-                poetry,
-                voice_file if voice_success else None,
-                folder,
-                video_duration
             )
 
         else:
 
-            print("Downloading background videos...")
+            print("Fetching one small Pexels video...")
 
-            backgrounds = fetch_pexels_videos(
+            background = fetch_one_pexels_video(
                 request.prompt,
-                5,
                 folder
             )
 
-            if not backgrounds:
-                return {
-                    "status": "error",
-                    "message": "Pexels se videos nahi milin."
-                }
+        # Automatic image fallback
 
-            success = create_video_from_clips(
-                backgrounds,
-                final_path,
-                poetry,
-                voice_file if voice_success else None,
-                folder,
-                video_duration
+        if not background and not image_mode:
+
+            print("Video unavailable; trying image fallback.")
+
+            background = fetch_one_pexels_image(
+                request.prompt,
+                folder
             )
 
+            image_mode = True
+
+        if not background:
+
+            return {
+                "status": "error",
+                "message": "Pexels background nahi mila. API key aur prompt check karein."
+            }
+
+        # Render video
+
+        print("Rendering video with low-memory FFmpeg settings...")
+
+        success = create_final_video(
+            background,
+            image_mode,
+            final_path,
+            poetry,
+            voice_path,
+            folder,
+            duration
+        )
+
         if not success:
+
             return {
                 "status": "error",
-                "message": "Video generation fail ho gayi."
+                "message": "Video render fail hui. Render logs mein FFmpeg error check karein."
             }
-
-        if not os.path.exists(final_path):
-            return {
-                "status": "error",
-                "message": "Final video file nahi mili."
-            }
-
-        video_url = f"/static/{final_filename}"
-
-        print("Video generated successfully!")
-        print("Video:", final_path)
 
         return {
             "status": "success",
             "message": "Video successfully generated!",
-            "video_url": video_url,
+            "video_url": f"/static/{filename}",
             "poetry": poetry,
-            "duration": video_duration,
-            "filename": final_filename
+            "duration": duration,
+            "filename": filename
         }
 
     except Exception as error:
 
-        print("MAIN ERROR:", error)
+        print("MAIN ERROR:", repr(error))
 
         return {
             "status": "error",
@@ -1079,6 +982,8 @@ async def generate_video(request: PromptRequest):
 
         if folder and os.path.exists(folder):
             shutil.rmtree(folder, ignore_errors=True)
+
+        GENERATION_LOCK.release()
 
 
 # ==========================================
@@ -1092,5 +997,5 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=8000
+        port=int(os.environ.get("PORT", "8000"))
     )
